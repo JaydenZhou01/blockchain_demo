@@ -7,15 +7,15 @@ function BalanceCard() {
         <div
             className="relative flex items-center justify-between p-4 rounded-xl shadow-lg"
             style={{
-                backgroundImage: 'url(/balance-bg.svg)', // 替换为 SVG 的路径
+                backgroundImage: 'url(/balance-bg.svg)',
                 backgroundSize: 'cover',
-                backgroundColor: '#F7A900', // 设置背景颜色，确保与 SVG 过渡融合
+                backgroundColor: '#F7A900',
             }}
         >
             {/* Balance Info */}
             <div className="bg-white p-4 rounded-lg shadow-md">
                 <h3 className="text-gray-600 text-sm font-medium">Balance</h3>
-                <p className="text-3xl font-bold text-gray-800">$12,000</p>
+                <p className="text-3xl font-bold text-gray-800">$12.000</p>
             </div>
 
             {/* Action Buttons */}
