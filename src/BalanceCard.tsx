@@ -7,7 +7,7 @@ function BalanceCard() {
         <div
             className="relative flex items-center justify-between p-4 rounded-xl shadow-lg"
             style={{
-                backgroundImage: 'url(/balance-bg.svg)',
+                backgroundImage: 'url(./src/assets/balance-bg.svg)',
                 backgroundSize: 'cover',
                 backgroundColor: '#F7A900',
             }}

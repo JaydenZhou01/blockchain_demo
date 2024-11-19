@@ -1,7 +1,7 @@
 import React from 'react';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
-import BalanceCard from './BalanceCard';
+import BalanceCard from './BalanceCard.tsx';
 
 
 
@@ -13,13 +13,13 @@ function RightSidebar() {
                 <div className="flex items-center justify-between w-full mb-6 gap-5">
                     <div className="flex space-x-4">
                         <div className="relative">
-                            <NotificationsIcon fontSize="medium" style={{color: '#6B7280'}}/>
+                            <NotificationsIcon fontSize="medium" style={{ color: '#6B7280' }} />
                             <span
                                 className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-              3 {/* Notification count */}
+                                3 {/* Notification count */}
                             </span>
                         </div>
-                        <SettingsIcon fontSize="medium" style={{color: '#6B7280'}}/> {/* Setting Icon */}
+                        <SettingsIcon fontSize="medium" style={{ color: '#6B7280' }} /> {/* Setting Icon */}
                     </div>
                     <img
                         src="https://via.placeholder.com/40" // Replace with actual user avatar URL
@@ -32,7 +32,7 @@ function RightSidebar() {
                 <BalanceCard />
             </div>
         </aside>
-);
+    );
 }
 
 export default RightSidebar;
