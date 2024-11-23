@@ -19,11 +19,11 @@ import { Button } from "@/components/ui/button"
 
 const menuItems = [
     { icon: Home, text: 'Dashboard', active: true },
-    { icon: Restaurant, text: 'Food Order' },
-    { icon: Star, text: 'Favorite' },
+  /*   { icon: Restaurant, text: 'Delivery Done' }, */
+    { icon: Star, text: 'Ranking' },
     { icon: MessageCircle, text: 'Message' },
-    { icon: ClipboardList, text: 'Order History' },
-    { icon: CreditCard, text: 'Bills' },
+    { icon: ClipboardList, text: 'Delivery History' },
+    { icon: CreditCard, text: 'Payment History' },
     { icon: Settings, text: 'Setting' },
 ]
 
@@ -31,18 +31,7 @@ export default function SidebarComponent() {
     const navigate = useNavigate();
 
     const switch_to = async () => {
-        const userLogin = Cookies.get("userLogin");
-        
-        if (userLogin) {
-            const userInfo = JSON.parse(userLogin);
-            console.log(userInfo.status);
-            if(userInfo.status=='1'){
-                navigate('/Dhome');
-            }
-            else{
-                navigate('/realname');
-            }
-          }
+        navigate('/home');
       };
 
     return (
@@ -51,7 +40,7 @@ export default function SidebarComponent() {
                 <Sidebar variant='inset'>
                     <SidebarHeader onClick={switch_to} className="px-6 pt-6 pb-10 max-md:px-5">
                         <h1 className="text-3xl font-bold text-yellow-500 text-center">
-                            GoMeal<span className="text-yellow-500">.</span>
+                            GoDelivery<span className="text-yellow-500">.</span>
                         </h1>
                     </SidebarHeader>
                     <SidebarContent>

@@ -1,9 +1,8 @@
 import React from 'react';
-import SidebarComponent from './Sidebar.tsx';
+import SidebarComponent from './SidebarD.tsx';
 import Topbar from './Topbar.tsx';
 import MainContent from './MainContent.tsx';
-//import RightSidebar from "./RightSidebar.tsx";
-import RightSidebar from "./food-delivery-app.tsx";
+import RightSidebar from "./dapp-delivery-accept-offer.tsx";
 
 
 const Dashboard = () => {
