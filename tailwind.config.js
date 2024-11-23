@@ -6,9 +6,11 @@ export default {
   	extend: {
 		    		fontFamily: {
 						raleway: ['"Raleway"', 'sans-serif'],
+						barlow: ['Barlow', 'sans-serif'],
   		},
 		backgroundImage: {
 			'custom-landing': 'linear-gradient(180deg, #FFF7E7 0%, #FFF1DC 100%)',
+			'banner': "url('/assets/banner-bg.svg')",
 		},
 		animation: {
 			'gradient-x': 'gradient-x 15s ease infinite',

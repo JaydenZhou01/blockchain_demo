@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { create } from "ipfs-http-client";
 import React, { useState,useEffect  } from "react";
-import { Buffer } from "buffer"; 
+import { Buffer } from "buffer";
 import Loginpage from "./app_login.tsx";
 import { Link } from 'react-router-dom';
 import Cookies from "js-cookie";
@@ -27,7 +27,7 @@ export default function Component() {
       const response = await axios.post('http://localhost:5000/getorder', {
         walletaddress:userInfo.walletadress
       });
-  
+
       if (response.data.success) {
         setOrders(response.data.message);
         setLoading(false);
@@ -43,8 +43,8 @@ export default function Component() {
 
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className="mx-auto w-full max-w-md bg-white p-4">
+    <div className="flex-grow min-h-screen bg-white">
+      <div className="mx-auto w-full max-w-md overflow-hidden p-4">
         <header className="mb-6 flex items-center justify-between">
           <div className="flex gap-4">
             <Tv className="h-6 w-6 text-yellow-500" />
@@ -148,7 +148,7 @@ export default function Component() {
         <Button className="w-full bg-yellow-500 hover:bg-yellow-600">Checkout</Button>
       </div>
     </div>
-    
+
   )
 }
 

@@ -8,13 +8,15 @@ import RightSidebar from "./food-delivery-app.tsx";
 
 const Dashboard = () => {
     return (
-        <div className="flex overflow-visible gap-10 bg-gray-100 min-h-screen min-w-screen">
-            <SidebarComponent />
-            <div className="flex flex-col flex-grow bg-gray-100">
-                <Topbar />
-                <MainContent />
+        <div
+            className="flex overflow-visible bg-white min-h-screen min-w-screen font-barlow">
+                <SidebarComponent/>
+            {/* MainContent section */}
+            <div className="flex flex-col flex-grow px-8 bg-custom-landing">
+                <Topbar/>
+                <MainContent/>
             </div>
-            <RightSidebar />    
+            <RightSidebar/>
         </div>
     );
 };
