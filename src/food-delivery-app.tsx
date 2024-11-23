@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { create } from "ipfs-http-client";
 import React, { useState,useEffect  } from "react";
-import { Buffer } from "buffer"; 
+import { Buffer } from "buffer";
 import Loginpage from "./app_login.tsx";
 import { Link } from 'react-router-dom';
 import Cookies from "js-cookie";
@@ -14,19 +14,19 @@ import axios from 'axios';
 
 export default function Component() {
   const [address, setAddress] = useState<string>("Elm Street, 23");
-  
-  
+
+
 /*   const onPageReload = async () => {
     const userLogin = Cookies.get("userLogin");
-        
+
     if (userLogin) {
         const userInfo = JSON.parse(userLogin);
         console.log(userInfo.status);
         if(userInfo.status=='1'){
-            
+
         }
         else{
-            
+
         }
       }
 
@@ -36,7 +36,7 @@ export default function Component() {
         password: password,
         walletaddress:walletAddress
       });
-  
+
       if (response.data.success) {
         navigate('/login');
       } else {
@@ -49,7 +49,7 @@ export default function Component() {
       }
     } catch (error) {
       console.error('Login failed:', error);
-  
+
     }
   };
 
@@ -58,8 +58,8 @@ export default function Component() {
   }); */
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className="mx-auto w-full max-w-md bg-white p-4">
+    <div className="flex-grow min-h-screen bg-white">
+      <div className="mx-auto w-full max-w-md overflow-hidden p-4">
         <header className="mb-6 flex items-center justify-between">
           <div className="flex gap-4">
             <Tv className="h-6 w-6 text-yellow-500" />
@@ -163,7 +163,7 @@ export default function Component() {
         <Button className="w-full bg-yellow-500 hover:bg-yellow-600">Checkout</Button>
       </div>
     </div>
-    
+
   )
 }
 

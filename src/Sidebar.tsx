@@ -32,7 +32,7 @@ export default function SidebarComponent() {
 
     const switch_to = async () => {
         const userLogin = Cookies.get("userLogin");
-        
+
         if (userLogin) {
             const userInfo = JSON.parse(userLogin);
             console.log(userInfo.status);
@@ -50,8 +50,8 @@ export default function SidebarComponent() {
             <SidebarProvider>
                 <Sidebar variant='inset'>
                     <SidebarHeader onClick={switch_to} className="px-6 pt-6 pb-10 max-md:px-5">
-                        <h1 className="text-3xl font-bold text-yellow-500 text-center">
-                            GoMeal<span className="text-yellow-500">.</span>
+                        <h1 className="text-3xl font-bold text-orange-500 text-center">
+                            GoMeal<span className="text-orange-500">.</span>
                         </h1>
                     </SidebarHeader>
                     <SidebarContent>
