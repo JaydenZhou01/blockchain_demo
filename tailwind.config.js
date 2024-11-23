@@ -4,10 +4,16 @@ export default {
     content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
   	extend: {
+		    		fontFamily: {
+						raleway: ['"Raleway"', 'sans-serif'],
+  		},
+		backgroundImage: {
+			'custom-landing': 'linear-gradient(180deg, #FFF7E7 0%, #FFF1DC 100%)',
+		},
 		animation: {
 			'gradient-x': 'gradient-x 15s ease infinite',
 		  },
-		  
+
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
