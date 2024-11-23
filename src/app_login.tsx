@@ -40,7 +40,7 @@ export default function Component() {
   
       if (response.data.success) {
         console.log(response.data.message);
-        Cookies.set("userLogin", JSON.stringify({ username: name, loggedIn: true,status:response.data.message}), { expires: 7 });
+        Cookies.set("userLogin", JSON.stringify({ username: name, loggedIn: true,status:response.data.message.status,walletadress:response.data.message.walletadress}), { expires: 7 });
         navigate('/home')
       } else {
         alert('用户名或密码错误');

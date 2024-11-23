@@ -47,7 +47,7 @@ app.post('/login', (req, res) => {
   
         if (results.length > 0) {
           console.log(results);
-          res.json({ success: true, message: results[0].Status });
+          res.json({ success: true, message: {status:results[0].Status,walletadress:walletaddress}});
         } else {
           res.json({ success: false, message: '用户名或密码错误' });
         }
