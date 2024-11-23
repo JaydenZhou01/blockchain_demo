@@ -5,14 +5,58 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { create } from "ipfs-http-client";
-import React, { useState } from "react";
+import React, { useState,useEffect  } from "react";
 import { Buffer } from "buffer"; 
-
 import Loginpage from "./app_login.tsx";
 import { Link } from 'react-router-dom';
+import Cookies from "js-cookie";
+import axios from 'axios';
+
 export default function Component() {
   const [address, setAddress] = useState<string>("Elm Street, 23");
   
+  
+/*   const onPageReload = async () => {
+    const userLogin = Cookies.get("userLogin");
+        
+    if (userLogin) {
+        const userInfo = JSON.parse(userLogin);
+        console.log(userInfo.status);
+        if(userInfo.status=='1'){
+            
+        }
+        else{
+            
+        }
+      }
+
+    try {
+      const response = await axios.post('http://localhost:5000/getorder', {
+        username: name,  // ensure 'name' is correctly passed as 'username'
+        password: password,
+        walletaddress:walletAddress
+      });
+  
+      if (response.data.success) {
+        navigate('/login');
+      } else {
+        if(response.data.message=="0"){
+        alert("The user already exsits");
+        }
+        else{
+          alert("please provide the right infromation");
+        }
+      }
+    } catch (error) {
+      console.error('Login failed:', error);
+  
+    }
+  };
+
+  useEffect(() => {
+    onPageReload();
+  }); */
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       <div className="mx-auto w-full max-w-md bg-white p-4">
