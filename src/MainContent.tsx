@@ -16,7 +16,7 @@ const categories = [
 const popularDishes = [
     {
         name: "Spicy seasoned seafood noodles",
-        price: "DT22.99",
+        price: "DT5",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_1.png",
@@ -26,7 +26,7 @@ const popularDishes = [
     },
     {
         name: "Beef dumpling in sour soup",
-        price: "DT25.99",
+        price: "DT7",
         discount: "15% Off",
         rating: 4,
         image: "/assets/popular_2.png",
@@ -36,7 +36,7 @@ const popularDishes = [
     },
     {
         name: "Spicy instant noodle with omelette",
-        price: "DT19.99",
+        price: "DT6.5",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_3.png",
@@ -46,7 +46,7 @@ const popularDishes = [
     },
     {
         name: "Spicy fried rice with omelet",
-        price: "DT19.99",
+        price: "DT4",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_4.png",
@@ -56,7 +56,7 @@ const popularDishes = [
     },
     {
         name: "Salted Pasta with mushroom sauce",
-        price: "DT37.99",
+        price: "DT3.5",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_5.png",
@@ -66,7 +66,7 @@ const popularDishes = [
     },
     {
         name: "Tom Yum Soup",
-        price: "DT39.99",
+        price: "DT8",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_6.png",

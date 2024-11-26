@@ -6,6 +6,7 @@ import SignUp from "./app_signup.tsx"
 import Realname from "./real_name.tsx"
 import DashboardD from "./DashboardD.tsx"
 import LandingPage from "@/LandingPage.tsx";
+import Blockchain from "./src_App.tsx"
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 const App : React.FC = () => {
   return(
@@ -17,6 +18,7 @@ const App : React.FC = () => {
     <Route path="/realname" element={<Realname />} />
     <Route path="/home" element={<Dashboard />} />
     <Route path="/Dhome" element={<DashboardD />} />
+    <Route path="/blockchain" element={<Blockchain />} />
   </Routes>
 </Router>
   );
