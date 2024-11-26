@@ -47,7 +47,7 @@ app.post('/login', (req, res) => {
   
         if (results.length > 0) {
           console.log(results);
-          res.json({ success: true, message: {status:results[0].Status,walletaddress:walletaddress}});
+          res.json({ success: true, message: {name:results[0].name,status:results[0].Status,walletaddress:results[0].wallet}});
         } else {
           res.json({ success: false, message: '用户名或密码错误' });
         }
@@ -65,7 +65,7 @@ app.post('/login', (req, res) => {
       }
 
       if (results.length > 0) {
-        res.json({ success: true, message: {status:results[0].Status,walletaddress:walletaddress}});
+        res.json({ success: true, message: {name:results[0].name,status:results[0].Status,walletaddress:results[0].wallet}});
       } else {
         res.json({ success: false, message: '用户名或密码错误' });
       }
@@ -313,6 +313,7 @@ app.post('/settledelivery', (req, res) => {
         return res.status(500).json({ success: false, message: '服务器错误' });
       }
       else{
+        res.json({ success: true});
           console.log("success");
       }
       

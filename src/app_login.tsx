@@ -36,7 +36,7 @@ export default function Component() {
       });
   
       if (response.data.success) {
-        Cookies.set("userLogin", JSON.stringify({ username: name, loggedIn: true,status:response.data.message.status,walletaddress:response.data.message.walletaddress}), { expires: 7 });
+        Cookies.set("userLogin", JSON.stringify({ username:response.data.message.name , loggedIn: true,status:response.data.message.status,walletaddress:response.data.message.walletaddress}), { expires: 7 });
         navigate('/home')
       } else {
         alert('用户名或密码错误');
