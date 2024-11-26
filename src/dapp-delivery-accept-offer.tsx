@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 import { Bell, ChevronRight, MapPin, Settings, Tv, DollarSign, Clock, Navigation, Wallet } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -8,18 +8,105 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import {Link} from "react-router-dom";
+import { ethers } from 'ethers'
+import Cookies from "js-cookie";
+import axios from 'axios';
+
+interface Order {
+  image: string;
+  name: string;
+  count: number;
+  price: number;
+}
 
 export default function Component() {
   const [isAccepted, setIsAccepted] = useState(false)
   const [walletAddress, setWalletAddress] = useState('')
-
-  const handleAccept = () => {
-    if (walletAddress) {
-      setIsAccepted(true)
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [time, setTime] = useState("");
+  const [Award, setAward] = useState(1);
+  const [pickup, setP] = useState("");
+  const [des, setD] = useState("");
+  const handleConnectWallet = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        // Request account access
+        await window.ethereum.request({ method: 'eth_requestAccounts' })
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        const signer = provider.getSigner()
+        const address = await signer.getAddress()
+        setWalletAddress(address)
+        console.log('Connected to wallet:', address)
+      } catch (error) {
+        console.error('Failed to connect wallet:', error)
+      }
     } else {
-      alert('Please connect your wallet first')
+      console.log('Please install MetaMask!')
     }
   }
+
+  const fetchDelivery = async () => {
+    const Dinfo = Cookies.get("DID");
+    if(Dinfo){
+      const content = JSON.parse(Dinfo);
+      console.log(Dinfo);
+    try {
+      // Replace with your backend API endpoint
+      const response = await axios.post('http://localhost:5000/getdelivery', {
+        id:content.id
+      });
+
+      if (response.data.success) {
+        var result=response.data.message;
+        var data=JSON.parse(result[0].content);
+        console.log(data);
+        setOrders(data[0].order);
+        setAward(content.service);
+        setTime(content.time);
+        setP(content.p);
+        setD(content.d);
+
+      } 
+  }catch (error) {
+    console.error('Login failed:', error);
+
+  }
+  };
+} 
+
+    const handleAccept = () => {
+      if (walletAddress) {
+        setIsAccepted(true)
+      } else {
+        alert('Please connect your wallet first')
+      }
+    }
+
+    const settle = async () => {
+      const Dinfo = Cookies.get("DID");
+      if(Dinfo){
+        const content = JSON.parse(Dinfo);
+        console.log(Dinfo);
+      try {
+        // Replace with your backend API endpoint
+        const response = await axios.post('http://localhost:5000/settledelivery', {
+          id:content.id
+        });
+  
+        if (response.data.success) {
+            console.log("settle delivery");
+            window.location.reload();
+        } 
+    }catch (error) {
+      console.error('Login failed:', error);
+  
+    }
+    };
+  } 
+
+   useEffect(() => {
+    fetchDelivery();
+  }, []); 
 
   return (
       <div className="flex min-h-screen bg-white p-4">
@@ -44,7 +131,7 @@ export default function Component() {
                   <CardContent className="p-6">
                     <div className="mb-4">
                       <div className="text-sm text-white">Offer Amount</div>
-                      <div className="text-3xl font-bold text-white">0.05 ETH</div>
+                      <div className="text-3xl font-bold text-white">DT{Award.toFixed(2)}</div>
                     </div>
                     <div className="flex gap-2">
                       <Button variant="secondary" className="flex-1 items-center justify-center" onClick={handleAccept}>
@@ -62,7 +149,7 @@ export default function Component() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-5 w-5 text-gray-400"/>
-                      <span>0x1234...5678</span>
+                      <span>{pickup}</span>
                     </div>
                     <Button variant="ghost" className="text-yellow-500">
                       View on Explorer
@@ -73,11 +160,18 @@ export default function Component() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-5 w-5 text-gray-400"/>
-                      <span>0x9876...4321</span>
+                      <span>{des}</span>
                     </div>
                     <Button variant="ghost" className="text-yellow-500">
                       View on Explorer
                     </Button>
+                  </div>
+                  <Separator className="my-4"/>
+                  <div className="mb-2 text-sm text-gray-500">Time Range</div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span>{time}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -89,7 +183,7 @@ export default function Component() {
                         value={walletAddress}
                         onChange={(e) => setWalletAddress(e.target.value)}
                     />
-                    <Button variant="outline">
+                    <Button variant="outline" onClick={handleConnectWallet}>
                       <Wallet className="mr-2 h-4 w-4"/>
                       Connect
                     </Button>
@@ -100,32 +194,25 @@ export default function Component() {
               <div>
                 <h2 className="text-2xl font-bold mb-4">Order Details</h2>
                 <div className="space-y-4 mb-6">
-                  <OrderItem
-                      name="CryptoPizza"
-                      quantity={1}
-                      tokenId="1234"
-                  />
-                  <OrderItem
-                      name="NFTBurger"
-                      quantity={2}
-                      tokenId="5678"
-                  />
-                  <OrderItem
-                      name="BlockchainSoda"
-                      quantity={3}
-                      tokenId="9101"
-                  />
+                {orders.length > 0 ? (
+          orders.map((order, index) => (
+            <OrderItem
+              image={order.image}
+              name={order.name}
+              quantity={order.count}
+              price={order.price}
+            />
+          ))
+        ) : (
+          <p className="text-gray-500">No food has been ordered</p>
+        )}
                 </div>
 
                 <Separator className="my-6"/>
 
-                <div className="mb-2 flex justify-between">
-                  <span className="text-gray-600">Estimated Gas</span>
-                  <span className="font-medium">0.002 ETH</span>
-                </div>
                 <div className="mb-6 flex justify-between">
                   <span className="text-xl font-bold">Total Reward</span>
-                  <span className="text-xl font-bold text-yellow-500">0.052 ETH</span>
+                  <span className="text-xl font-bold text-yellow-500">DT{Award.toFixed(2)}</span>
                 </div>
 
                 <div className="mb-4 rounded-lg border p-4">
@@ -140,8 +227,8 @@ export default function Component() {
                   </Button>
                 </div>
 
-                <Button className="w-full bg-yellow-500 hover:bg-yellow-600" disabled={!isAccepted}>
-                  {isAccepted ? 'Sign Transaction' : 'Accept to Sign'}
+                <Button className="w-full bg-yellow-500 hover:bg-yellow-600" disabled={!isAccepted} onClick={settle}>
+                {isAccepted ? 'Sign Transaction' : 'Accept to Sign'}
                 </Button>
               </div>
             </div>
@@ -151,25 +238,29 @@ export default function Component() {
 }
 
 function OrderItem({
-                     name,
-                     quantity,
-                     tokenId,
-                   }: {
+  image,
+  name,
+  quantity,
+  price,
+}: {
+  image: string
   name: string
   quantity: number
-  tokenId: string
+  price: number
 }) {
   return (
-      <div className="flex items-center gap-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
-          <DollarSign className="h-6 w-6 text-yellow-500"/>
-        </div>
-        <div className="flex-1">
-          <h3 className="font-medium">{name}</h3>
-          <p className="text-sm text-gray-500">Quantity: {quantity}</p>
-          <p className="text-xs text-gray-400">Token ID: {tokenId}</p>
-        </div>
-        <Clock className="h-5 w-5 text-gray-400" />
+    <div className="flex items-center gap-4">
+      <img
+        alt={name}
+        className="h-16 w-16 rounded-full object-cover"
+        src={image}
+      />
+      <div className="flex-1">
+        <h3 className="font-medium">{name}</h3>
+        <p className="text-sm text-gray-500">x{quantity}</p>
+      </div>
+      <Clock className="h-5 w-5 text-gray-400" />
     </div>
   )
 }
+

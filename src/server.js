@@ -7,7 +7,7 @@ import express from 'express';
 import mysql from 'mysql2';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-
+import Cookies from "js-cookie";
 
 // Initialize the app
 const app = express();
@@ -27,7 +27,7 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// POST route for login
+// login
 app.post('/login', (req, res) => {
   const { username, password,walletaddress } = req.body;
 
@@ -47,7 +47,7 @@ app.post('/login', (req, res) => {
   
         if (results.length > 0) {
           console.log(results);
-          res.json({ success: true, message: {status:results[0].Status,walletadress:walletaddress}});
+          res.json({ success: true, message: {status:results[0].Status,walletaddress:walletaddress}});
         } else {
           res.json({ success: false, message: '用户名或密码错误' });
         }
@@ -65,7 +65,7 @@ app.post('/login', (req, res) => {
       }
 
       if (results.length > 0) {
-        res.json({ success: true, message: results[0].Status});
+        res.json({ success: true, message: {status:results[0].Status,walletaddress:walletaddress}});
       } else {
         res.json({ success: false, message: '用户名或密码错误' });
       }
@@ -74,6 +74,7 @@ app.post('/login', (req, res) => {
 }
 });
 
+// Sign up
 app.post('/signup', (req, res) => {
   const { username, password,walletaddress } = req.body;
 
@@ -114,6 +115,7 @@ app.post('/signup', (req, res) => {
  
 });
 
+//Real name authentication
 app.post('/real', (req, res) => {
   const { realname, HKID,walletaddress } = req.body;
 
@@ -137,6 +139,186 @@ pool.execute(
         );
       });
 
+// add order
+app.post('/setdish', (req, res) => {
+  const { dishname, dishprice,dishimage,name } = req.body;
+  const now = new Date();
+  const priceNumber = parseFloat(dishprice.replace('DT', ''));
+
+  // Query the database to check for matching username and password
+  pool.execute(
+    'SELECT * FROM orderdetail WHERE name=? AND paid = 0;',
+    [name],
+    (err, results) => {
+      if (err) {
+        console.error('Database query failed:', err);
+        return res.status(500).json({ success: false, message: '服务器错误' });
+      }
+
+      if (results.length > 0) {
+        const current_order = JSON.parse(results[0].content);
+        var flag=true;
+        for(var i=0;i<current_order.length;i++){
+          if(current_order[i].name==dishname){
+            current_order[i].count=current_order[i].count+1;
+            flag=false;
+            break
+          }
+        }
+        if(flag){
+          current_order.push({name:dishname,price:priceNumber,image:dishimage,count:1})
+        }
+        var now_order=JSON.stringify(current_order);
+        pool.execute(
+          'UPDATE orderdetail SET content = ? , time = ? WHERE name = ? AND paid = 0;',
+          [now_order,now,name],
+          (err, results) => {
+            if (err) {
+              console.error('Database query failed:', err);
+              return res.status(500).json({ success: false, message: '服务器错误' });
+            }
+            else {
+              res.json({ success: true, message:'1'});
+            }
+          }
+        );
+        
+      } 
+      else {
+        var now_order=JSON.stringify([{name:dishname,price:priceNumber,image:dishimage,count:1}]);
+        pool.execute(
+          'INSERT INTO orderdetail (name,content,time) VALUES (?, ?, ?);',
+          [name, now_order,now],
+          (err, results) => {
+            if (err) {
+              console.error('Database query failed:', err);
+              return res.status(500).json({ success: false, message: '服务器错误' });
+            }
+            else {
+              res.json({ success: true, message: 'ok' });
+            }
+          }
+        );
+      }
+    }
+  );
+ 
+});
+
+//get order
+app.post('/getorder', (req, res) => {
+  const { name} = req.body;
+  pool.execute(
+    'SELECT * FROM orderdetail WHERE name=? AND paid = 0;',
+    [name],
+    (err, results) => {
+      if (err) {
+        console.error('Database query failed:', err);
+        return res.status(500).json({ success: false, message: '服务器错误' });
+      }
+      
+      if (results.length > 0) {
+        res.json({ success: true, message:results[0].content});
+      } else {
+        res.json({ success: false, message: '用户名或密码错误' });
+      }
+    }
+  );
+});
+
+//set order
+app.post('/setorder', (req, res) => {
+  const { name,order_list,des1,des2,timerange,service} = req.body;
+  const now = new Date();
+  pool.execute(
+    'UPDATE orderdetail SET paid = 1 WHERE name = ? AND paid = 0;',
+    [name],
+    (err, results) => {
+      if (err) {
+        console.error('Database query failed:', err);
+        return res.status(500).json({ success: false, message: '服务器错误' });
+      }
+      else{
+        var destination=des1+','+des2;
+        var now_order=JSON.stringify([{name:name,order:order_list,des:destination,time:timerange,fee:service}]);
+        pool.execute(
+          'INSERT INTO delivery (name,content,time) VALUES (?, ?, ?);',
+          [name,now_order,now],
+          (err, results) => {
+            if (err) {
+              console.error('Database query failed:', err);
+              return res.status(500).json({ success: false, message: '服务器错误' });
+            }
+            else{
+              res.json({ success: true});
+            }
+          }
+        );
+       
+      }
+    }
+  );
+});
+
+//get all delivery
+app.post('/getallD', (req, res) => {
+  pool.execute(
+    'SELECT * FROM delivery WHERE settle=0',
+    (err, results) => {
+      if (err) {
+        console.error('Database query failed:', err);
+        return res.status(500).json({ success: false, message: '服务器错误' });
+      }
+      
+      if (results.length > 0) {
+        res.json({ success: true, message:results});
+      } else {
+        res.json({ success: false, message: '用户名或密码错误' });
+      }
+    }
+  );
+
+});
+//get delivery
+app.post('/getdelivery', (req, res) => {
+  const { id} = req.body;
+  pool.execute(
+    'SELECT * FROM delivery WHERE id=? AND settle=0',
+    [id],
+    (err, results) => {
+      if (err) {
+        console.error('Database query failed:', err);
+        return res.status(500).json({ success: false, message: '服务器错误' });
+      }
+      
+      if (results.length > 0) {
+        console.log(results.length);
+        res.json({ success: true, message:results});
+      } else {
+        res.json({ success: false, message: '用户名或密码错误' });
+      }
+    }
+  );
+});
+
+//settle delivery
+app.post('/settledelivery', (req, res) => {
+  const {id} = req.body;
+  pool.execute(
+    'UPDATE delivery SET settle = 1 WHERE id=?',
+    [id],
+    (err, results) => {
+      if (err) {
+        console.error('Database query failed:', err);
+        return res.status(500).json({ success: false, message: '服务器错误' });
+      }
+      else{
+          console.log("success");
+      }
+      
+    }
+  );
+});
 // Start the server on port 5000
 const port = 5000;
 app.listen(port, () => {

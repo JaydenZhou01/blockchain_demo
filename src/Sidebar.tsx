@@ -32,11 +32,11 @@ export default function SidebarComponent() {
 
     const switch_to = async () => {
         const userLogin = Cookies.get("userLogin");
-
+        console.log(userLogin);
         if (userLogin) {
             const userInfo = JSON.parse(userLogin);
             console.log(userInfo.status);
-            if(userInfo.status=='1'){
+            if(userInfo.status==1){
                 navigate('/Dhome');
             }
             else{

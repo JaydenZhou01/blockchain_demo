@@ -1,4 +1,6 @@
 import React from 'react';
+import axios from 'axios';
+import Cookies from "js-cookie";
 
 const categories = [
     { name: 'Bakery', icon: '/assets/icons/Baked.svg', link: '#' },
@@ -9,10 +11,12 @@ const categories = [
     { name: 'Seafood', icon: '/assets/icons/Fish.svg', link: '#' },
 ]
 
+
+
 const popularDishes = [
     {
         name: "Spicy seasoned seafood noodles",
-        price: "$22.99",
+        price: "DT22.99",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_1.png",
@@ -22,7 +26,7 @@ const popularDishes = [
     },
     {
         name: "Beef dumpling in sour soup",
-        price: "$25.99",
+        price: "DT25.99",
         discount: "15% Off",
         rating: 4,
         image: "/assets/popular_2.png",
@@ -32,7 +36,7 @@ const popularDishes = [
     },
     {
         name: "Spicy instant noodle with omelette",
-        price: "$19.99",
+        price: "DT19.99",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_3.png",
@@ -42,7 +46,7 @@ const popularDishes = [
     },
     {
         name: "Spicy fried rice with omelet",
-        price: "$19.99",
+        price: "DT19.99",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_4.png",
@@ -52,7 +56,7 @@ const popularDishes = [
     },
     {
         name: "Salted Pasta with mushroom sauce",
-        price: "$37.99",
+        price: "DT37.99",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_5.png",
@@ -62,7 +66,7 @@ const popularDishes = [
     },
     {
         name: "Tom Yum Soup",
-        price: "$39.99",
+        price: "DT39.99",
         discount: "15% Off",
         rating: 5,
         image: "/assets/popular_6.png",
@@ -94,7 +98,7 @@ const restaurants = [
         link: "#",
     },
     {
-        name: "Ruby Tuesday",
+        name: "Ruby Tue",
         image: "/assets/restaurant_3.png",
         logo: "/assets/icons/restaurant_logo_3.png",
         likes: 1919,
@@ -207,7 +211,31 @@ const MainContent = () => {
                             <p className="text-yellow-500 font-bold text-lg mt-1">{dish.price}</p>
 
                             {/* Add to Cart Button */}
-                            <button
+                            <button onClick={async () => {
+                try {
+                    const userLogin = Cookies.get("userLogin");
+                    if(userLogin){
+                    const userInfo = JSON.parse(userLogin);
+                    const response = await axios.post('http://localhost:5000/setdish', {
+                        dishname: dish.name,  // ensure 'name' is correctly passed as 'username'
+                        dishprice: dish.price,
+                        dishimage:dish.image,
+                        name:userInfo.username
+                      });
+
+                      if (response.data.success) {
+                        window.location.reload();
+                      } else {
+                        alert('something went wrong');
+                      }
+                    }
+                    } catch (error) {
+                      console.error('Login failed:', error);
+                  
+                    }
+            }
+
+                            }
                                 className="absolute bottom-0 right-0 bg-yellow-500 text-white rounded-tl rounded-br flex items-center justify-center hover:bg-yellow-600">
                                 <span className="text-base font-bold px-2 py-2">
                                     Add to Cart

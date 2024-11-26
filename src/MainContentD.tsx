@@ -7,36 +7,48 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Package } from 'lucide-react'
+import Cookies from "js-cookie";
+import axios from 'axios';
 
 const mapContainerStyle = {
     width: '100%',
     height: '400px',
 };
 
-const orders = [
+
+interface delivery{
+    id:number;
+    pickup:string;
+    des:string;
+    time:string;
+    reward:number
+
+}
+
+/* const orders = [
     {
         id: "0x1234...5678",
         pickup: "123 Main St, Anytown, USA",
         destination: "456 Elm St, Othertown, USA",
-        reward: "0.05 ETH"
+        reward: "4"
     },
     {
         id: "0x2345...6789",
         pickup: "789 Oak Ave, Somewhere, USA",
         destination: "101 Pine Rd, Elsewhere, USA",
-        reward: "0.07 ETH"
+        reward: "10"
     },
     {
         id: "0x3456...7890",
         pickup: "202 Maple Dr, Heretown, USA",
         destination: "303 Birch Ln, Theretown, USA",
-        reward: "0.06 ETH"
+        reward: "7"
     },
     {
         id: "0x4567...8901",
         pickup: "404 Cedar Blvd, Nowhereville, USA",
         destination: "505 Spruce Ave, Somewhereville, USA",
-        reward: "0.08 ETH"
+        reward: "3"
     },
     {
         id: "0x5678...9012",
@@ -44,7 +56,9 @@ const orders = [
         destination: "707 Sequoia Pl, Thattown, USA",
         reward: "0.09 ETH"
     }
-]
+] */
+
+
 
 const MainContent: React.FC = () => {
     const [position, setPosition] = useState<google.maps.LatLngLiteral | null>(
@@ -52,14 +66,39 @@ const MainContent: React.FC = () => {
     );
     const [map, setMap] = useState<google.maps.Map | null>(null);
     const [error, setError] = useState<string | null>(null);
-
+ 
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, // Replace with your API key
     });
-
-    const handleTakeOrder = (orderId: string) => {
+    const [Deliverys, setDeliverys] = useState<delivery[]>([]);
+ 
+    const fetchDelivery = async () => {
+        try {
+          // Replace with your backend API endpoint
+          const response = await axios.post('http://localhost:5000/getallD', {
+          });
+    
+          if (response.data.success) {
+            var result=response.data.message;
+            const newDeliveries: delivery[] = [];
+            for(var i=0;i<result.length;i++){
+              var info=result[i];
+              var content=JSON.parse(info.content);
+              var temp={id:info.id,pickup:"TKO,No. 8 Chung Wah Road, Tseung Kwan O",des:content[0].des,time:content[0].time,reward:parseFloat(content[0].fee)};
+              newDeliveries.push(temp);
+            }
+            setDeliverys(newDeliveries);
+          } 
+      }catch (error) {
+        console.error('Login failed:', error);
+    
+      }
+    } 
+    const handleTakeOrder = (orderId: number,pickup:string,des:string,fee:number,time:string) => {
         console.log(`Order taken: ${orderId}`)
         // Here you would typically call a function to update the blockchain or your backend
+        Cookies.set("DID", JSON.stringify({id:orderId,p:pickup,d:des,service:fee,time:time}), { expires: 7 });
+        window.location.reload();
     }
 
     // Function to get the user's current location
@@ -89,11 +128,12 @@ const MainContent: React.FC = () => {
 
     // Automatically fetch location when the page loads
     useEffect(() => {
-        locateUser();
+        locateUser();fetchDelivery();
     }, []);
 
     if (loadError) return <p>Error loading maps. Please check your API key.</p>;
     if (!isLoaded) return <p>Loading map...</p>;
+ 
 
     return (
         <div className="flex-grow min-h-screen">
@@ -131,7 +171,43 @@ const MainContent: React.FC = () => {
             <Card className="w-full max-w-full mx-auto mt-6 rounded bg-orange-50">
                 <CardContent className="p-4">
                     <ScrollArea className="h-[400px] w-full pr-4 pt-4">
-                        {orders.map((order, index) => (
+                    {Deliverys.length > 0 ? (
+          Deliverys.map((order, index) => (
+            <React.Fragment key={order.id}>
+                                {index > 0 && <Separator className="my-4"/>}
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg font-semibold">Order #{order.id}</h3>
+                                        <Badge variant="secondary"
+                                               className="bg-yellow-400 text-yellow-900 font-bold text-lg">
+                                            DT{(order.reward).toFixed(2)}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">Time Range: {order.time}</p>
+                                    <div className="grid grid-cols-1 gap-2 mt-2">
+                                        <div>
+                                            <p className="text-sm font-medium">Pickup:</p>
+                                            <p className="text-sm text-muted-foreground">{order.pickup}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium">Destination:</p>
+                                            <p className="text-sm text-muted-foreground">{order.des}</p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        onClick={() => handleTakeOrder(order.id,order.pickup,order.des,order.reward,order.time)}
+                                        className="w-full mt-2 bg-orange-500 hover:bg-orange-600 text-white"
+                                    >
+                                        <Package className="mr-2 h-4 w-4"/> Take Order
+                                    </Button>
+                                </div>
+                            </React.Fragment>
+            
+          ))
+        ) : (
+          <p className="text-gray-500">No Delivery has been found</p>
+        )}
+{/*                         {orders.map((order, index) => (
                             <React.Fragment key={order.id}>
                                 {index > 0 && <Separator className="my-4"/>}
                                 <div className="space-y-2">
@@ -161,7 +237,7 @@ const MainContent: React.FC = () => {
                                     </Button>
                                 </div>
                             </React.Fragment>
-                        ))}
+                        ))} */}
                     </ScrollArea>
                 </CardContent>
             </Card>
