@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useState,useEffect } from 'react'
+import React, { useState,useEffect} from 'react'
 import { Bell, ChevronRight, MapPin, Settings, Tv, DollarSign, Clock, Navigation, Wallet } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import { ethers } from 'ethers'
 import Cookies from "js-cookie";
 import axios from 'axios';
@@ -27,6 +27,7 @@ export default function Component() {
   const [Award, setAward] = useState(1);
   const [pickup, setP] = useState("");
   const [des, setD] = useState("");
+  const navigate = useNavigate()
   const handleConnectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
@@ -49,30 +50,30 @@ export default function Component() {
     const Dinfo = Cookies.get("DID");
     if(Dinfo){
       const content = JSON.parse(Dinfo);
-      console.log(Dinfo);
+      console.log("Content:",content);
     try {
       // Replace with your backend API endpoint
       const response = await axios.post('http://localhost:5000/getdelivery', {
-        id:content.id
+        orderhash:content.orderhash
       });
 
       if (response.data.success) {
         var result=response.data.message;
         var data=JSON.parse(result[0].content);
-        console.log(data);
+        // console.log(data);
         setOrders(data[0].order);
         setAward(content.service);
         setTime(content.time);
         setP(content.p);
         setD(content.d);
 
-      } 
+      }
   }catch (error) {
     console.error('Login failed:', error);
 
   }
   };
-} 
+}
 
     const handleAccept = () => {
       if (walletAddress) {
@@ -86,27 +87,35 @@ export default function Component() {
       const Dinfo = Cookies.get("DID");
       if(Dinfo){
         const content = JSON.parse(Dinfo);
-        console.log(Dinfo);
+        // console.log(content);
       try {
         // Replace with your backend API endpoint
         const response = await axios.post('http://localhost:5000/settledelivery', {
-          id:content.id
+          orderhash:content.orderhash,
         });
-  
+
         if (response.data.success) {
             console.log("settle delivery");
-            window.location.reload();
-        } 
+            navigate('/delivery', {
+              state: {
+              id:content.id,
+              pickup:content.p,
+              des:content.d,
+              timeRange:content.time,
+              service:content.service,
+              orderhash:content.orderhash,}});
+        }
+
     }catch (error) {
       console.error('Login failed:', error);
-  
+
     }
     };
-  } 
+  }
 
    useEffect(() => {
     fetchDelivery();
-  }, []); 
+  }, []);
 
   return (
       <div className="flex min-h-screen bg-white p-4">

@@ -8,7 +8,7 @@ import { create } from "ipfs-http-client";
 import React, { useState,useEffect  } from "react";
 import { Buffer } from "buffer";
 import Loginpage from "./app_login.tsx";
-import { Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import Cookies from "js-cookie";
 import axios from 'axios';
 
@@ -25,13 +25,11 @@ export default function Component() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [Total, setTotal] = useState(1);
-  const [address2, setAddress2] = useState(
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt."
-  );
+  const [address2, setAddress2] = useState("");
   const [isEditing2, setIsEditing2] = useState(false); // Manage whether the text area is visible
   const [Fee, setFee] = useState('1');
   const [isEditing3, setIsEditing3] = useState(false); // Manage whether the text area is visible
-  const [time, setTime] = useState("eg.14:00-15:00");
+  const [time, setTime] = useState("14:00-15:00");
   const [showPicker, setShowPicker] = useState(false);
   const [tempStartTime, setTempStartTime] = useState("");
   const [tempEndTime, setTempEndTime] = useState("");
@@ -45,7 +43,7 @@ export default function Component() {
     setTime(`${tempStartTime || "00:00"} - ${tempEndTime || "23:59"}`);
     setShowPicker(false);
   };
-
+  const navigate = useNavigate();
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -70,13 +68,13 @@ export default function Component() {
         setOrders(result);
         setLoading(false);
         setTotal(totalprice);
-      } 
+      }
   }catch (error) {
     console.error('Login failed:', error);
 
   }
   };
-} 
+}
 
 const settleorder= async () =>{
   const userLogin = Cookies.get("userLogin");
@@ -94,14 +92,25 @@ const settleorder= async () =>{
       });
 
       if (response.data.success) {
-         window.location.reload();
-          console.log("data store");
-      } 
+        const { orderhash } = response.data; // Extract orderhash from response
+
+        console.log("data stored, orderhash:", orderhash);
+
+        navigate('/order', {
+          state: {
+            orders,     // Pass the orders array
+            address1,   // Pass the primary delivery address
+            address2,   // Pass the secondary delivery address
+            time,       // Pass the time range
+            Fee,        // Pass the service fee
+            orderhash   // Pass the unique order hash
+          },
+        });
+      }
   }catch (error) {
     console.error('Login failed:', error);
-
   }
-  };
+  }
 
 }
 
@@ -242,7 +251,7 @@ useEffect(() => {
            Add Details
             </Button>
       )}
-     
+
 
           </div>
           <div className="mb-2 text-sm text-gray-500">Time Range for Delivery</div>

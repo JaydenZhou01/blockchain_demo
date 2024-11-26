@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button"
 
 const menuItems = [
     { icon: Home, text: 'Dashboard', active: true },
-  /*   { icon: Restaurant, text: 'Delivery Done' }, */
     { icon: Star, text: 'Ranking' },
     { icon: MessageCircle, text: 'Message' },
     { icon: ClipboardList, text: 'Delivery History' },
