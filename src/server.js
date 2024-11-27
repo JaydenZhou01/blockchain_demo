@@ -35,7 +35,6 @@ app.post('/login', (req, res) => {
   // Check if the username and password are provided
 
   // Query the database to check for matching username and password
-  console.log(walletaddress)
   if (walletaddress!=''){
     pool.execute(
       'SELECT * FROM customer WHERE wallet=?',
@@ -116,7 +115,7 @@ app.post('/signup', (req, res) => {
 
 });
 
-//Real name authentication
+// Real name authentication
 app.post('/real', (req, res) => {
     const { realname, HKID, walletaddress } = req.body;
 
@@ -125,37 +124,44 @@ app.post('/real', (req, res) => {
         return res.json({ success: false, message: "the required fields are not provided" });
     }
 
-    const sql = `
-    UPDATE customer AS c
-    JOIN rank AS r ON c.HKID = r.HKID
-    SET 
-      c.real_name = ?, 
-      c.HKID = ?, 
-      c.Status = 1,
-      r.HKID = ?, 
-      r.score = 0
-    WHERE c.wallet = ?;
-  `;
+    // SQL to update the customer table
+    const updateCustomerSql = `
+        UPDATE customer
+        SET 
+          real_name = ?, 
+          HKID = ?, 
+          Status = 1
+        WHERE wallet = ?;
+    `;
 
-    pool.execute(
-        sql,
-        [realname, HKID, HKID, walletaddress],
-        (err, results) => {
+    // SQL to insert a new row into the rank table
+    const insertRankSql = 'INSERT INTO \`rank\` (HKID, score) VALUES (?, 0);';
+
+    // Start by updating the customer table
+    pool.execute(updateCustomerSql, [realname, HKID, walletaddress], (err, updateResults) => {
+        if (err) {
+            console.error('Database query failed while updating customer:', err);
+            return res.status(500).json({ success: false, message: '服务器错误' });
+        }
+
+        // Check if any rows were updated
+        if (updateResults.affectedRows === 0) {
+            return res.json({ success: false, message: 'No rows updated in the customer table' });
+        }
+
+        // Proceed to insert into the rank table
+        pool.execute(insertRankSql, [HKID], (err, insertResults) => {
             if (err) {
-                console.error('Database query failed:', err);
+                console.error('Database query failed while inserting into rank:', err);
                 return res.status(500).json({ success: false, message: '服务器错误' });
             }
 
-            // Check if any rows were affected
-            if (results.affectedRows === 0) {
-                return res.json({ success: false, message: 'No rows updated' });
-            }
-
-            // Successfully updated both tables
-            res.json({ success: true, message: "12" });
-        }
-    );
+            // Successfully updated customer and inserted into rank
+            res.json({ success: true, message: "Real name authentication succeeded" });
+        });
+    });
 });
+
 
 // add order
 app.post('/setdish', (req, res) => {
@@ -414,7 +420,6 @@ app.post('/getdelivery', (req, res) => {
       }
 
       if (results.length > 0) {
-        console.log(results.length);
         res.json({ success: true, message:results});
       } else {
         res.json({ success: false, message: '用户名或密码错误' });
