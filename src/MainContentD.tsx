@@ -16,48 +16,14 @@ const mapContainerStyle = {
 };
 
 
-interface delivery{
-    id:number;
-    pickup:string;
-    des:string;
-    time:string;
-    reward:number
-
+interface delivery {
+    id: number;
+    pickup: string;
+    des: string;
+    time: string;
+    reward: number;
+    orderhash: string;
 }
-
-/* const orders = [
-    {
-        id: "0x1234...5678",
-        pickup: "123 Main St, Anytown, USA",
-        destination: "456 Elm St, Othertown, USA",
-        reward: "4"
-    },
-    {
-        id: "0x2345...6789",
-        pickup: "789 Oak Ave, Somewhere, USA",
-        destination: "101 Pine Rd, Elsewhere, USA",
-        reward: "10"
-    },
-    {
-        id: "0x3456...7890",
-        pickup: "202 Maple Dr, Heretown, USA",
-        destination: "303 Birch Ln, Theretown, USA",
-        reward: "7"
-    },
-    {
-        id: "0x4567...8901",
-        pickup: "404 Cedar Blvd, Nowhereville, USA",
-        destination: "505 Spruce Ave, Somewhereville, USA",
-        reward: "3"
-    },
-    {
-        id: "0x5678...9012",
-        pickup: "606 Redwood Ct, Thistown, USA",
-        destination: "707 Sequoia Pl, Thattown, USA",
-        reward: "0.09 ETH"
-    }
-] */
-
 
 
 const MainContent: React.FC = () => {
@@ -66,38 +32,47 @@ const MainContent: React.FC = () => {
     );
     const [map, setMap] = useState<google.maps.Map | null>(null);
     const [error, setError] = useState<string | null>(null);
- 
+
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, // Replace with your API key
     });
     const [Deliverys, setDeliverys] = useState<delivery[]>([]);
- 
+
     const fetchDelivery = async () => {
         try {
           // Replace with your backend API endpoint
           const response = await axios.post('http://localhost:5000/getallD', {
           });
-    
-          if (response.data.success) {
-            var result=response.data.message;
-            const newDeliveries: delivery[] = [];
-            for(var i=0;i<result.length;i++){
-              var info=result[i];
-              var content=JSON.parse(info.content);
-              var temp={id:info.id,pickup:"TKO,No. 8 Chung Wah Road, Tseung Kwan O",des:content[0].des,time:content[0].time,reward:parseFloat(content[0].fee)};
-              newDeliveries.push(temp);
+
+            if (response.data.success) {
+                const result = response.data.message;
+                const newDeliveries: delivery[] = [];
+
+                for (let i = 0; i < result.length; i++) {
+                    const info = result[i];
+                    const content = JSON.parse(info.content);
+                    const temp: delivery = {
+                        id: info.id,
+                        pickup: "TKO, No. 8 Chung Wah Road, Tseung Kwan O",
+                        des: content[0].des,
+                        time: content[0].time,
+                        reward: parseFloat(content[0].fee),
+                        orderhash: info.orderhash,
+                    };
+                    newDeliveries.push(temp);
+                }
+
+                setDeliverys(newDeliveries);
             }
-            setDeliverys(newDeliveries);
-          } 
       }catch (error) {
         console.error('Login failed:', error);
-    
+
       }
-    } 
-    const handleTakeOrder = (orderId: number,pickup:string,des:string,fee:number,time:string) => {
+    }
+    const handleTakeOrder = (orderId: number,pickup:string,des:string,fee:number,time:string,orderhash:string) => {
         console.log(`Order taken: ${orderId}`)
         // Here you would typically call a function to update the blockchain or your backend
-        Cookies.set("DID", JSON.stringify({id:orderId,p:pickup,d:des,service:fee,time:time}), { expires: 7 });
+        Cookies.set("DID", JSON.stringify({id:orderId,p:pickup,d:des,service:fee,time:time,orderhash:orderhash}), { expires: 7 });
         window.location.reload();
     }
 
@@ -133,7 +108,7 @@ const MainContent: React.FC = () => {
 
     if (loadError) return <p>Error loading maps. Please check your API key.</p>;
     if (!isLoaded) return <p>Loading map...</p>;
- 
+
 
     return (
         <div className="flex-grow min-h-screen">
@@ -195,14 +170,14 @@ const MainContent: React.FC = () => {
                                         </div>
                                     </div>
                                     <Button
-                                        onClick={() => handleTakeOrder(order.id,order.pickup,order.des,order.reward,order.time)}
+                                        onClick={() => handleTakeOrder(order.id,order.pickup,order.des,order.reward,order.time,order.orderhash)}
                                         className="w-full mt-2 bg-orange-500 hover:bg-orange-600 text-white"
                                     >
                                         <Package className="mr-2 h-4 w-4"/> Take Order
                                     </Button>
                                 </div>
                             </React.Fragment>
-            
+
           ))
         ) : (
           <p className="text-gray-500">No Delivery has been found</p>

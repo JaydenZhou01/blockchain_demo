@@ -34,7 +34,7 @@ export default function Component() {
         password: password,
         walletaddress:walletAddress
       });
-  
+
       if (response.data.success) {
         Cookies.set("userLogin", JSON.stringify({ username:response.data.message.name , loggedIn: true,status:response.data.message.status,walletaddress:response.data.message.walletaddress}), { expires: 7 });
         navigate('/home')
@@ -43,7 +43,7 @@ export default function Component() {
       }
     } catch (error) {
       console.error('Login failed:', error);
-  
+
     }
   };
 
@@ -71,7 +71,7 @@ export default function Component() {
       <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 animate-gradient-x"></div>
       <Card className="w-full max-w-md max-w-md relative z-10 bg-white/90 backdrop-blur-sm">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Delichain</CardTitle>
+          <CardTitle className="text-2xl text-orange-500 font-bold text-center">Delichain</CardTitle>
           <CardDescription className="text-center">
             Enter your username and password or connect your wallet to continue
           </CardDescription>
@@ -80,24 +80,24 @@ export default function Component() {
           <form  onSubmit={(e) => { e.preventDefault();}} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">User name</Label>
-              <Input 
-                id="name" 
-                type="text" 
-                placeholder="Jack" 
+              <Input
+                id="name"
+                type="text"
+                placeholder="Jack"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
-                <Input 
-                  id="password" 
-                  type={showPassword ? "text" : "password"} 
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required 
+                  required
                 />
                 <Button
                   type="button"
@@ -115,21 +115,21 @@ export default function Component() {
                 </Button>
               </div>
             </div>
-           
+
             <Button onClick={handleLogin}  className="w-full bg-yellow-500 hover:bg-yellow-600">
               Login
             </Button>
           </form>
-          
+
           <Separator className="my-4" />
-          
+
           <div className="space-y-2">
             <Label htmlFor="wallet">Or connect your wallet</Label>
             <div className="flex space-x-2">
-              <Input 
-                id="wallet" 
-                type="text" 
-                placeholder="Wallet Address" 
+              <Input
+                id="wallet"
+                type="text"
+                placeholder="Wallet Address"
                 value={walletAddress}
                 readOnly
               />

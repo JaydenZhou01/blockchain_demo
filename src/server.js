@@ -7,6 +7,7 @@ import express from 'express';
 import mysql from 'mysql2';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import crypto from 'crypto';
 import Cookies from "js-cookie";
 
 // Initialize the app
@@ -44,7 +45,7 @@ app.post('/login', (req, res) => {
           console.error('Database query failed:', err);
           return res.status(500).json({ success: false, message: '服务器错误' });
         }
-  
+
         if (results.length > 0) {
           console.log(results);
           res.json({ success: true, message: {name:results[0].name,status:results[0].Status,walletaddress:results[0].wallet}});
@@ -94,7 +95,7 @@ app.post('/signup', (req, res) => {
 
       if (results.length > 0) {
         res.json({ success: false, message:"0" });
-      } 
+      }
       else {
         pool.execute(
           'INSERT INTO customer (name,password,wallet) VALUES (?, ?, ?);',
@@ -112,7 +113,7 @@ app.post('/signup', (req, res) => {
       }
     }
   );
- 
+
 });
 
 //Real name authentication
@@ -141,68 +142,71 @@ pool.execute(
 
 // add order
 app.post('/setdish', (req, res) => {
-  const { dishname, dishprice,dishimage,name } = req.body;
-  const now = new Date();
-  const priceNumber = parseFloat(dishprice.replace('DT', ''));
+    const { dishname, dishprice, dishimage, name } = req.body;
+    const now = new Date();
+    const priceNumber = parseFloat(dishprice.replace('DT', ''));
 
-  // Query the database to check for matching username and password
-  pool.execute(
-    'SELECT * FROM orderdetail WHERE name=? AND paid = 0;',
-    [name],
-    (err, results) => {
-      if (err) {
-        console.error('Database query failed:', err);
-        return res.status(500).json({ success: false, message: '服务器错误' });
-      }
+    // Check if an unpaid order exists
+    pool.execute(
+        'SELECT * FROM orderdetail WHERE name=? AND paid = 0;',
+        [name],
+        (err, results) => {
+            if (err) {
+                console.error('Database query failed:', err);
+                return res.status(500).json({ success: false, message: '服务器错误' });
+            }
 
-      if (results.length > 0) {
-        const current_order = JSON.parse(results[0].content);
-        var flag=true;
-        for(var i=0;i<current_order.length;i++){
-          if(current_order[i].name==dishname){
-            current_order[i].count=current_order[i].count+1;
-            flag=false;
-            break
-          }
+            if (results.length > 0) {
+                // Update existing order
+                const current_order = JSON.parse(results[0].content);
+                let flag = true;
+
+                for (let i = 0; i < current_order.length; i++) {
+                    if (current_order[i].name === dishname) {
+                        current_order[i].count += 1;
+                        flag = false;
+                        break;
+                    }
+                }
+
+                if (flag) {
+                    current_order.push({ name: dishname, price: priceNumber, image: dishimage, count: 1 });
+                }
+
+                const now_order = JSON.stringify(current_order);
+                pool.execute(
+                    'UPDATE orderdetail SET content = ?, time = ? WHERE name = ? AND paid = 0;',
+                    [now_order, now, name],
+                    (err, results) => {
+                        if (err) {
+                            console.error('Database query failed:', err);
+                            return res.status(500).json({ success: false, message: '服务器错误' });
+                        } else {
+                            res.json({ success: true, message: '1' });
+                        }
+                    }
+                );
+
+            } else {
+                // Generate a unique orderhash for the new order
+                const orderhash = crypto.createHash('sha256').update(name + now.toISOString() + Math.random()).digest('hex');
+                const now_order = JSON.stringify([{ name: dishname, price: priceNumber, image: dishimage, count: 1 }]);
+
+                pool.execute(
+                    'INSERT INTO orderdetail (name, content, time, orderhash) VALUES (?, ?, ?, ?);',
+                    [name, now_order, now, orderhash],
+                    (err, results) => {
+                        if (err) {
+                            console.error('Database query failed:', err);
+                            return res.status(500).json({ success: false, message: '服务器错误' });
+                        } else {
+                            res.json({ success: true, message: 'ok' });
+                        }
+                    }
+                );
+            }
         }
-        if(flag){
-          current_order.push({name:dishname,price:priceNumber,image:dishimage,count:1})
-        }
-        var now_order=JSON.stringify(current_order);
-        pool.execute(
-          'UPDATE orderdetail SET content = ? , time = ? WHERE name = ? AND paid = 0;',
-          [now_order,now,name],
-          (err, results) => {
-            if (err) {
-              console.error('Database query failed:', err);
-              return res.status(500).json({ success: false, message: '服务器错误' });
-            }
-            else {
-              res.json({ success: true, message:'1'});
-            }
-          }
-        );
-        
-      } 
-      else {
-        var now_order=JSON.stringify([{name:dishname,price:priceNumber,image:dishimage,count:1}]);
-        pool.execute(
-          'INSERT INTO orderdetail (name,content,time) VALUES (?, ?, ?);',
-          [name, now_order,now],
-          (err, results) => {
-            if (err) {
-              console.error('Database query failed:', err);
-              return res.status(500).json({ success: false, message: '服务器错误' });
-            }
-            else {
-              res.json({ success: true, message: 'ok' });
-            }
-          }
-        );
-      }
-    }
-  );
- 
+    );
 });
 
 //get order
@@ -216,7 +220,7 @@ app.post('/getorder', (req, res) => {
         console.error('Database query failed:', err);
         return res.status(500).json({ success: false, message: '服务器错误' });
       }
-      
+
       if (results.length > 0) {
         res.json({ success: true, message:results[0].content});
       } else {
@@ -226,36 +230,97 @@ app.post('/getorder', (req, res) => {
   );
 });
 
+// Get all orders
+app.post('/getallorder', (req, res) => {
+    const { name } = req.body;
+
+    const sql = `
+        SELECT 
+            d.id AS id,
+            d.content AS content,
+            d.time AS time,
+            d.orderhash AS orderhash
+        FROM 
+            delivery d
+        JOIN 
+            orderdetail o
+        ON 
+            d.orderhash = o.orderhash
+        WHERE 
+            o.name = ? 
+        AND 
+            o.finish = 0;
+    `;
+
+    pool.execute(sql, [name], (err, results) => {
+        if (err) {
+            console.error('Database query failed:', err);
+            return res.status(500).json({ success: false, message: '服务器错误' });
+        }
+
+        if (results.length > 0) {
+            res.json({ success: true, message: results });
+        } else {
+            res.json({ success: false, message: 'No orders found.' });
+        }
+    });
+});
+
+
 //set order
 app.post('/setorder', (req, res) => {
-  const { name,order_list,des1,des2,timerange,service} = req.body;
-  const now = new Date();
+    const { name, order_list, des1, des2, timerange, service } = req.body;
+    const now = new Date();
+
+    // Generate a unique orderhash
+    const orderhash = crypto.createHash('sha256').update(name + now.toISOString() + Math.random()).digest('hex');
+
+    // Update orderdetail with the generated orderhash
+    pool.execute(
+        'UPDATE orderdetail SET paid = 1, orderhash = ? WHERE name = ? AND paid = 0;',
+        [orderhash, name],
+        (err, results) => {
+            if (err) {
+                console.error('Database query failed:', err);
+                return res.status(500).json({ success: false, message: '服务器错误' });
+            } else {
+                const destination = `${des1},${des2}`;
+                const now_order = JSON.stringify([{ name, order: order_list, des: destination, time: timerange, fee: service, orderhash }]);
+
+                // Insert the delivery record with the same orderhash
+                pool.execute(
+                    'INSERT INTO delivery (name, content, time, orderhash) VALUES (?, ?, ?, ?);',
+                    [name, now_order, now, orderhash],
+                    (err, results) => {
+                        if (err) {
+                            console.error('Database query failed:', err);
+                            return res.status(500).json({ success: false, message: '服务器错误' });
+                        } else {
+                            res.json({ success: true, orderhash }); // Return the orderhash to the frontend
+                        }
+                    }
+                );
+            }
+        }
+    );
+});
+
+//check delivery status
+app.post('/checksettle', (req, res) => {
+  const { orderhash } = req.body;
   pool.execute(
-    'UPDATE orderdetail SET paid = 1 WHERE name = ? AND paid = 0;',
-    [name],
+    'SELECT * FROM delivery WHERE orderhash=?;',
+    [orderhash],
     (err, results) => {
       if (err) {
         console.error('Database query failed:', err);
         return res.status(500).json({ success: false, message: '服务器错误' });
       }
-      else{
-        var destination=des1+','+des2;
-        var now_order=JSON.stringify([{name:name,order:order_list,des:destination,time:timerange,fee:service}]);
-        pool.execute(
-          'INSERT INTO delivery (name,content,time) VALUES (?, ?, ?);',
-          [name,now_order,now],
-          (err, results) => {
-            if (err) {
-              console.error('Database query failed:', err);
-              return res.status(500).json({ success: false, message: '服务器错误' });
-            }
-            else{
-              res.json({ success: true});
-            }
-          }
-        );
-       
-      }
+        if (results.length > 0) {
+            res.json({ success: true, message: results[0].settle});
+        } else {
+            res.json({ success: false, message: '用户名或密码错误' });
+        }
     }
   );
 });
@@ -269,7 +334,7 @@ app.post('/getallD', (req, res) => {
         console.error('Database query failed:', err);
         return res.status(500).json({ success: false, message: '服务器错误' });
       }
-      
+
       if (results.length > 0) {
         res.json({ success: true, message:results});
       } else {
@@ -281,16 +346,16 @@ app.post('/getallD', (req, res) => {
 });
 //get delivery
 app.post('/getdelivery', (req, res) => {
-  const { id} = req.body;
+  const {orderhash} = req.body;
   pool.execute(
-    'SELECT * FROM delivery WHERE id=? AND settle=0',
-    [id],
+    'SELECT * FROM delivery WHERE orderhash=? AND settle=0',
+    [orderhash],
     (err, results) => {
       if (err) {
         console.error('Database query failed:', err);
         return res.status(500).json({ success: false, message: '服务器错误' });
       }
-      
+
       if (results.length > 0) {
         console.log(results.length);
         res.json({ success: true, message:results});
@@ -303,10 +368,10 @@ app.post('/getdelivery', (req, res) => {
 
 //settle delivery
 app.post('/settledelivery', (req, res) => {
-  const {id} = req.body;
+  const {orderhash} = req.body;
   pool.execute(
-    'UPDATE delivery SET settle = 1 WHERE id=?',
-    [id],
+    'UPDATE delivery SET settle = 1 WHERE orderhash=?;',
+    [orderhash],
     (err, results) => {
       if (err) {
         console.error('Database query failed:', err);
@@ -316,10 +381,12 @@ app.post('/settledelivery', (req, res) => {
         res.json({ success: true});
           console.log("success");
       }
-      
+
     }
   );
 });
+
+
 // Start the server on port 5000
 const port = 5000;
 app.listen(port, () => {

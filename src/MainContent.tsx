@@ -231,7 +231,7 @@ const MainContent = () => {
                     }
                     } catch (error) {
                       console.error('Login failed:', error);
-                  
+
                     }
             }
 
@@ -239,12 +239,6 @@ const MainContent = () => {
                                 className="absolute bottom-0 right-0 bg-yellow-500 text-white rounded-tl rounded-br flex items-center justify-center hover:bg-yellow-600">
                                 <span className="text-base font-bold px-2 py-2">
                                     Add to Cart
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M12 4v16m8-8H4"
-                                    />
-                                    {/*</svg>*/}
                                 </span>
                             </button>
                         </div>
