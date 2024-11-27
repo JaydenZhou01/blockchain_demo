@@ -49,7 +49,7 @@ export default function OrderDetails() {
     }
     const { orders, address1, address2, time, Fee, orderhash } = state
 
-    const totalPrice = orders.reduce((sum, item) => sum + item.price * item.count, 0) + parseFloat(Fee)
+    const totalPrice = orders.reduce((sum, item) => sum + item.price, 0) + parseFloat(Fee)
     // The order is in the default "Prepare" stage
     const orderStages = ['Order Placed', 'Preparing your order...', 'On the way...', 'Enjoy your meal!']
     const [currentStage, setCurrentStage] = useState(0);
@@ -120,7 +120,7 @@ export default function OrderDetails() {
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell>{item.count}</TableCell>
                                     <TableCell
-                                        className="text-right">${(item.price * item.count).toFixed(2)}</TableCell>
+                                        className="text-right">${item.price.toFixed(2)}</TableCell>
                                 </TableRow>
                             ))}
                             <TableRow>

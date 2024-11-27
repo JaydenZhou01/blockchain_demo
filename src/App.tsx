@@ -10,7 +10,8 @@ import OrderDetails from "@/customer_confirm.tsx";
 import FoodOrders from "@/food_order.tsx";
 import DeliveryDetails from "@/delivery_confirm.tsx";
 import RatingPage from "@/rating.tsx";
-import Blockchain from "./src_App.tsx"
+import Blockchain from "./src_App.tsx";
+import RankingPage from "./RankingPage.tsx";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 const App : React.FC = () => {
   return(
@@ -27,6 +28,7 @@ const App : React.FC = () => {
     <Route path="/myorders" element={<FoodOrders/>} />
     <Route path="/rating" element={<RatingPage/>} />
     <Route path="/blockchain" element={<Blockchain />} />
+    <Route path="/ranking" element={<RankingPage />} />
   </Routes>
 </Router>
   );

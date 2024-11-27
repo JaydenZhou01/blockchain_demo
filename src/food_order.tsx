@@ -44,7 +44,7 @@ export default function FoodOrders() {
         });
     };
     const calculateTotal = (order: Order) => {
-        const itemsTotal = order.order.reduce((sum, item) => sum + item.price * item.count, 0);
+        const itemsTotal = order.order.reduce((sum, item) => sum + item.price, 0);
         return itemsTotal + parseFloat(order.fee);
     };
 
