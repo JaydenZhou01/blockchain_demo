@@ -1,3 +1,0 @@
- @radix-ui/react-tooltip
- @radix-ui/react-separator
-@radix-ui/react-dialog

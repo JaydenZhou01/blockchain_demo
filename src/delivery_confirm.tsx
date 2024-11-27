@@ -3,6 +3,14 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Button} from "@/components/ui/button.tsx";
 
+interface LocationState {
+    id: string;
+    pickup: string;
+    des: string;
+    timeRange: string;
+    service: string;
+    orderhash: string;
+}
 export default function DeliveryDetails() {
     const location = useLocation()
     const state = location.state as LocationState | null
