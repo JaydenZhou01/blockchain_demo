@@ -121,10 +121,10 @@ const initWeb3 = async () => {
 };
 
 const getAmount  = async () => {
-  
-const balanceWei = await contract.methods.getBalance(account);
-console.log(parseInt(balanceWei));
-const balanceEth = ethers.utils.formatEther(balanceWei);
+console.log(account);
+const balanceWei = await contract.methods.getBalance(account).call();
+console.log(balanceWei.toString());
+const balanceEth = ethers.utils.formatEther(balanceWei.toString());
 setBalance(balanceEth);
 }
       
