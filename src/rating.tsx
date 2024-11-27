@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {useLocation, useNavigate} from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
+import {Loader2} from "lucide-react";
 
 interface OrderItem {
     image: string;
@@ -24,9 +26,11 @@ export default function RatingPage() {
     const location = useLocation()
     const state = location.state as LocationState | null
     const navigate = useNavigate()
+    const [loading, setLoading] = useState(false)
     const [deliverymanHKID, setDeliverymanHKID] = useState<string | null>(null)
     const [selectedRating, setSelectedRating] = useState(0)
-
+    const [error, setError] = useState<string | null>(null)
+    const { orders, address1, address2, time, Fee, orderhash } = state
     const updateStars = (rating: number) => {
         setSelectedRating(rating);
     };
@@ -95,10 +99,21 @@ export default function RatingPage() {
     const handleBackToDashboard = () => {
         navigate('/home')
     }
-    if (!state) {
-        return <div>Loading...</div> // Or some error message
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            </div>
+        )
     }
-    const { orders, address1, address2, time, Fee, orderhash } = state
+    if (error) {
+        return (
+            <div className="text-center text-red-500 p-4">
+                {error}
+            </div>
+        )
+    }
+
     const totalPrice = orders.reduce((sum, item) => sum + item.price * item.count, 0) + parseFloat(Fee)
     return (
         <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center p-4 space-y-4">
