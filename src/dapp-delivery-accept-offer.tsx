@@ -128,19 +128,6 @@ export default function Component() {
   return (
       <div className="flex min-h-screen bg-white p-4">
         <div className="mx-auto w-full max-w-sm bg-white overflow-hidden">
-          <header className="mb-6 flex items-center justify-between">
-            <div className="flex gap-4">
-              <Tv className="h-6 w-6 text-yellow-500"/>
-              <Bell className="h-6 w-6 text-yellow-500"/>
-              <Settings className="h-6 w-6 text-yellow-500"/>
-            </div>
-            <Link to="/login">
-              <Avatar className="h-10 w-10">
-                <AvatarImage alt="User" src="/placeholder.svg"/>
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-            </Link>
-          </header>
             <div className="grid grid-cols-1 gap-6">
               <div>
                 <h2 className="text-2xl font-bold mb-4">New Delivery Offer</h2>

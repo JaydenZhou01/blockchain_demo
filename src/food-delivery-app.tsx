@@ -23,6 +23,7 @@ interface Order {
 }
 
 export default function Component() {
+  const [userName, setUserName] = useState("U");
   const [address1, setAddress1] = useState("Elm Street, 23");
   const [isEditing1, setIsEditing1] = useState(false); // Manage whether the text area is visible
   const [orders, setOrders] = useState<Order[]>([]);
@@ -137,7 +138,7 @@ const createOrder = async () => {
         console.log(parseInt(orderCount),typeof orderCount);
         Cookies.set("oid", JSON.stringify({oid:parseInt(orderCount)}), { expires: 7 });
         //setOid(orderCount);
- 
+
         //alert(`Order created successfully! Order Count: ${orderCount}`);
       } else {
         console.log('Full receipt:', receipt);
@@ -152,7 +153,7 @@ const createOrder = async () => {
 
 const settleorder= async () =>{
   const userLogin = Cookies.get("userLogin");
-  
+
     if(userLogin){
       const userInfo = JSON.parse(userLogin);
     try {
@@ -171,10 +172,10 @@ const settleorder= async () =>{
         service:Fee,
         orderid:id_d.oid
       });
-    
+
       if (response.data.success) {
         const { orderhash } = response.data; // Extract orderhash from response
-  
+
         console.log("data stored, orderhash:", orderhash);
 
 
@@ -193,7 +194,7 @@ const settleorder= async () =>{
   }catch (error) {
     console.error('Login failed:', error);
   }
-    
+
   }
 
 }
@@ -253,19 +254,19 @@ useEffect(() => {
   return (
     <div className="flex-grow min-h-screen bg-white">
       <div className="mx-auto w-full max-w-md overflow-hidden p-4">
-        <header className="mb-6 flex items-center justify-between">
-          <div className="flex gap-4">
-            <Tv className="h-6 w-6 text-yellow-500" />
-            <Bell className="h-6 w-6 text-yellow-500" />
-            <Settings className="h-6 w-6 text-yellow-500" />
-          </div>
-          <Link to="/login">
-          <Avatar className="h-10 w-10">
-            <AvatarImage alt="User" src="/placeholder.svg" />
-            <AvatarFallback>U</AvatarFallback>
-          </Avatar>
-          </Link>
-        </header>
+        {/*<header className="mb-6 flex items-center justify-between">*/}
+        {/*  <div className="flex gap-4">*/}
+        {/*    <Tv className="h-6 w-6 text-yellow-500" />*/}
+        {/*    <Bell className="h-6 w-6 text-yellow-500" />*/}
+        {/*    <Settings className="h-6 w-6 text-yellow-500" />*/}
+        {/*  </div>*/}
+        {/*  <Link to="/login">*/}
+        {/*  <Avatar className="h-10 w-10">*/}
+        {/*    <AvatarImage alt="User" src="/placeholder.svg" />*/}
+        {/*    <AvatarFallback>U</AvatarFallback>*/}
+        {/*  </Avatar>*/}
+        {/*  </Link>*/}
+        {/*</header>*/}
 
         <h2 className="mb-4 text-2xl font-bold">Your Balance</h2>
         <Card className="mb-6 bg-gradient-to-r from-orange-400 via-yellow-400 to-yellow-300">
