@@ -1,9 +1,10 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {useLocation, useNavigate} from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {Card, CardContent, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table.tsx";
-import axios from "axios";
+import {Loader2} from "lucide-react";
 
 interface OrderItem {
     image: string;
@@ -23,10 +24,14 @@ interface LocationState {
 
 export default function RatingPage() {
     const location = useLocation()
-    const state = location.state as LocationState | null
+    const state = location.state as LocationState
     const navigate = useNavigate()
+    const [loading, setLoading] = useState(false)
     const [deliverymanHKID, setDeliverymanHKID] = useState<string | null>(null)
     const [selectedRating, setSelectedRating] = useState(0)
+    const [error, setError] = useState<string | null>(null)
+
+    const { orders, address1, address2, time, Fee, orderhash } = state
 
     const updateStars = (rating: number) => {
         setSelectedRating(rating);
@@ -40,11 +45,11 @@ export default function RatingPage() {
                 const deliveryResponse = await axios.post('http://localhost:5000/getdelivery2', { orderhash })
                 if (deliveryResponse.data.success) {
                     const deliveryman = deliveryResponse.data.message.deliveryman
-
                     // Get HKID of the deliveryman
                     const hkidResponse = await axios.post('http://localhost:5000/getHKID2', { name: deliveryman })
                     if (hkidResponse.data.success) {
-                        setDeliverymanHKID(hkidResponse.data.hkid)
+                        const hkid = hkidResponse.data.message
+                        setDeliverymanHKID(hkid)
                     } else {
                         throw new Error('Failed to get deliveryman HKID')
                     }
@@ -60,17 +65,19 @@ export default function RatingPage() {
         }
 
         fetchDeliverymanInfo()
+
     }, [orderhash])
 
     const handleSubmit = async () => {
         if (selectedRating > 0 && deliverymanHKID) {
             setLoading(true)
             try {
+                console.log(deliverymanHKID)
                 const currentScoreResponse = await axios.post('http://localhost:5000/getScore', {
                     HKID: deliverymanHKID
                 })
 
-                const currentScore = currentScoreResponse.data.score
+                const currentScore = currentScoreResponse.data.message || 0
                 const newScore = currentScore + (selectedRating * 10)
                 const response = await axios.post('http://localhost:5000/updateScore', {
                     HKID: deliverymanHKID,
@@ -96,10 +103,22 @@ export default function RatingPage() {
     const handleBackToDashboard = () => {
         navigate('/home')
     }
-    if (!state) {
-        return <div>Loading...</div> // Or some error message
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+            </div>
+        )
     }
-    const { orders, address1, address2, time, Fee, orderhash } = state
+    if (error) {
+        return (
+            <div className="text-center text-red-500 p-4">
+                {error}
+            </div>
+        )
+    }
+
+
     const totalPrice = orders.reduce((sum, item) => sum + item.price * item.count, 0) + parseFloat(Fee)
     return (
         <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center p-4 space-y-4">
