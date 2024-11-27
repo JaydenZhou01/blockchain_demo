@@ -14,6 +14,7 @@ import axios from 'axios';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import DeliverySystemABI from './DeliverySystemABI.json';
+import { ethers } from 'ethers'
 
 interface Order {
   image: string;
@@ -48,7 +49,7 @@ export default function Component() {
   const [restaurantAmount, setRestaurantAmount] = useState<string>('');
   const [deliveryAmount, setDeliveryAmount] = useState<string>('');
   const [oid, setOid] = useState('1');
-
+  const [balance, setBalance] = useState<string | null>(null)
 
   const handleButtonClick = () => {
     setShowPicker(!showPicker);
@@ -119,6 +120,14 @@ const initWeb3 = async () => {
   }
 };
 
+const getAmount  = async () => {
+  
+const balanceWei = await contract.methods.getBalance(account);
+console.log(parseInt(balanceWei));
+const balanceEth = ethers.utils.formatEther(balanceWei);
+setBalance(balanceEth);
+}
+      
 const createOrder = async () => {
   if (contract && account) {
     try {
@@ -248,6 +257,7 @@ const handleSaveClick3 = () => {
 useEffect(() => {
   fetchOrders();
   initWeb3();
+  getAmount();
 }, []);
 
 
@@ -273,7 +283,7 @@ useEffect(() => {
           <CardContent className="p-6">
             <div className="mb-4">
               <div className="text-sm text-white">Balance</div>
-              <div className="text-3xl font-bold text-white">DT12,000</div>
+              <div className="text-3xl font-bold text-white">DT{balance}</div>
             </div>
 {/*             <div className="flex gap-2">
               <Button variant="secondary" className="flex-1">
