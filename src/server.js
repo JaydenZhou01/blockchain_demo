@@ -118,27 +118,44 @@ app.post('/signup', (req, res) => {
 
 //Real name authentication
 app.post('/real', (req, res) => {
-  const { realname, HKID,walletaddress } = req.body;
+    const { realname, HKID, walletaddress } = req.body;
 
-  // Check if the username and password are provided
-  if (realname==""||HKID==""||walletaddress==""){
-    return res.json({ success: false, message:"1" });
-  }
-  // Query the database to check for matching username and password
-pool.execute(
-          'UPDATE customer SET real_name = ?, HKID = ?,Status=1 WHERE wallet = ?;',
-          [realname, HKID,walletaddress],
-          (err, results) => {
+    // Check if the required fields are provided
+    if (realname === "" || HKID === "" || walletaddress === "") {
+        return res.json({ success: false, message: "the required fields are not provided" });
+    }
+
+    const sql = `
+    UPDATE customer AS c
+    JOIN rank AS r ON c.HKID = r.HKID
+    SET 
+      c.real_name = ?, 
+      c.HKID = ?, 
+      c.Status = 1,
+      r.HKID = ?, 
+      r.score = 0
+    WHERE c.wallet = ?;
+  `;
+
+    pool.execute(
+        sql,
+        [realname, HKID, HKID, walletaddress],
+        (err, results) => {
             if (err) {
-              console.error('Database query failed:', err);
-              return res.status(500).json({ success: false, message: '服务器错误' });
+                console.error('Database query failed:', err);
+                return res.status(500).json({ success: false, message: '服务器错误' });
             }
-            else {
-              res.json({ success: true, message:"12" });
+
+            // Check if any rows were affected
+            if (results.affectedRows === 0) {
+                return res.json({ success: false, message: 'No rows updated' });
             }
-          }
-        );
-      });
+
+            // Successfully updated both tables
+            res.json({ success: true, message: "12" });
+        }
+    );
+});
 
 // add order
 app.post('/setdish', (req, res) => {
@@ -266,6 +283,46 @@ app.post('/getallorder', (req, res) => {
     });
 });
 
+app.post('/getHKID', (req, res) => {
+    const { walletAddress } = req.body;
+    pool.execute(
+        'SELECT HKID FROM customer WHERE wallet=?;',
+        [walletAddress],
+        (err, results) => {
+            if (err) {
+                console.error('Database query failed:', err);
+                return res.status(500).json({success: false, message: '服务器错误'});
+            }
+
+            if (results.length > 0) {
+
+                res.json({success: true, message: results[0].HKID});
+            } else {
+                res.json({success: false, message: 'No HKID found.'});
+            }
+        }
+    );
+});
+
+app.post('/getScore', (req, res) => {
+    const {HKID} = req.body;
+    pool.execute(
+        'SELECT score FROM rank WHERE HKID=?;',
+        [HKID],
+        (err, results) => {
+            if (err) {
+                console.error('Database query failed:', err);
+                return res.status(500).json({success: false, message: '服务器错误'});
+            }
+
+            if (results.length > 0) {
+                res.json({success: true, message: results[0].score});
+            } else {
+                res.json({success: false, message: 'No score found.'});
+            }
+        }
+    );
+})
 
 //set order
 app.post('/setorder', (req, res) => {

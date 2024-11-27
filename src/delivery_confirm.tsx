@@ -7,6 +7,14 @@ import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 import DeliverySystemABI from './DeliverySystemABI.json';
 
+interface LocationState {
+    id: string;
+    pickup: string;
+    des: string;
+    timeRange: string;
+    service: string;
+    orderhash: string;
+}
 export default function DeliveryDetails() {
     const location = useLocation()
     const state = location.state as LocationState | null
