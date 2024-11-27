@@ -60,6 +60,10 @@ contract DeliverySystem {
         emit FoodDelivered(_orderId);
     }
 
+      function getBalance(address _address) public view returns (uint256) {
+        return _address.balance;
+    }
+    
     function getOrder(uint256 _orderId) public view returns (
         address customer,
         address restaurant,
