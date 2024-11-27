@@ -1,4 +1,4 @@
-'use client'
+'use client update'
  'type="submit"'
 declare global {
   interface Window {
