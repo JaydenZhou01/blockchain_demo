@@ -5,6 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress"
 import {Button} from "@/components/ui/button";
 import axios from "axios";
+import Web3 from 'web3';
+import { AbiItem } from 'web3-utils';
+import DeliverySystemABI from './DeliverySystemABI.json';
 
 interface OrderItem {
     image: string;
@@ -26,10 +29,42 @@ export default function OrderDetails() {
     const location = useLocation()
     const state = location.state as LocationState | null
     const navigate = useNavigate()
+    const [web3, setWeb3] = useState<Web3 | null>(null);
+    const [contract, setContract] = useState<any>(null);
+    const [account, setAccount] = useState<string>('');
+    const [orderDetails, setOrderDetails] = useState<any>(null);
+    const [orderId, setOrderId] = useState<string>('');
+    const [restaurantAddress, setRestaurantAddress] = useState<string>('');
+    const [deliveryAddress, setDeliveryAddress] = useState<string>('');
+    const [restaurantAmount, setRestaurantAmount] = useState<string>('');
+    const [deliveryAmount, setDeliveryAmount] = useState<string>('');
 
-    const handleConfirmReceipt = (orderDetails: LocationState) => {
+    const initWeb3 = async () => {
+        if (window.ethereum) {
+          const web3Instance = new Web3(window.ethereum);
+          try {
+            await window.ethereum.enable();
+            setWeb3(web3Instance);
+            const accounts = await web3Instance.eth.getAccounts();
+            setAccount("0x3dfe367AEafe83d25061EaF082C5CE235837F03a"); //customer
+            /* setAccount("0x1F1CFfe2F1eCf378FD1c97F1c897f77F7C0F33Da"); */ //delivery
+           /* setAccount("0xAa29B8Dc495A186A0acD240c415F2979A9E9623c"); */
+            const contractInstance = new web3Instance.eth.Contract(
+              DeliverySystemABI as AbiItem[],
+              "0xaf55cC47Ac30a59976E2368EAB25959F2D69FFC6"
+            );
+            setContract(contractInstance);
+          } catch (error) {
+            console.error("Error initializing web3:", error);
+          }
+        } else {
+          console.log('Please install MetaMask!');
+        }
+      };
+
+    const handleConfirmReceipt = async (orderDetails: LocationState) => {
         console.log("Receipt confirmed for order:", orderDetails);
-
+        await confirmFoodDelivery();
         // Navigate to the `/rating` page with the provided order details
         navigate('/rating', {
             state: {
@@ -44,6 +79,8 @@ export default function OrderDetails() {
     };
 
 
+
+
     const handleBackToDashboard = () => {
         navigate('/home') // Adjust the path as needed
     }
@@ -54,6 +91,28 @@ export default function OrderDetails() {
     const orderStages = ['Order Placed', 'Preparing your order...', 'On the way...', 'Enjoy your meal!']
     const [currentStage, setCurrentStage] = useState(0);
     const [progressPercentage, setProgressPercentage] = useState(0);
+
+    const confirmFoodDelivery = async () => {
+        if (contract && account) {
+            try {
+                // Replace with your backend API endpoint
+                const response = await axios.post('http://localhost:5000/getdelivery2', {
+                    orderhash:orderhash
+                });
+          
+                if (response.data.success) {
+                setOrderId(response.data.message.orderid);
+                console.log(response.data.message.orderid);
+                await contract.methods.confirmFoodDelivery(response.data.message.orderid).send({ from: account });
+          
+                //navigate('/Dhome');
+                }
+            }catch (error) {
+              console.error('Login failed:', error);
+            }
+        }
+      };
+
 
     useEffect(() => {
         // Call checksettle API to get the delivery status
@@ -78,6 +137,7 @@ export default function OrderDetails() {
         };
 
         checkDeliveryStatus();
+        initWeb3();
     }, [orderhash]);
 
     // Update progress percentage whenever currentStage changes

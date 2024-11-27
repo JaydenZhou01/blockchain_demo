@@ -428,12 +428,33 @@ app.post('/getdelivery', (req, res) => {
   );
 });
 
-//settle delivery
-app.post('/settledelivery', (req, res) => {
+//get delivery after settle
+app.post('/getdelivery2', (req, res) => {
   const {orderhash} = req.body;
   pool.execute(
-    'UPDATE delivery SET settle = 1 WHERE orderhash=?;',
+    'SELECT * FROM delivery WHERE orderhash=? AND settle=1',
     [orderhash],
+    (err, results) => {
+      if (err) {
+        console.error('Database query failed:', err);
+        return res.status(500).json({ success: false, message: '服务器错误' });
+      }
+
+      if (results.length > 0) {
+        res.json({ success: true, message:results[0]});
+      } else {
+        res.json({ success: false, message: '用户名或密码错误' });
+      }
+    }
+  );
+});
+
+//settle delivery
+app.post('/settledelivery', (req, res) => {
+  const {orderhash,delivery} = req.body;
+  pool.execute(
+    'UPDATE delivery SET settle = 1, deliveryman = ? WHERE orderhash=?;',
+    [delivery,orderhash],
     (err, results) => {
       if (err) {
         console.error('Database query failed:', err);

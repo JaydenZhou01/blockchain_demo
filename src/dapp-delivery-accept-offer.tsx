@@ -90,10 +90,14 @@ export default function Component() {
       if(Dinfo){
         const content = JSON.parse(Dinfo);
         // console.log(content);
+        const user= Cookies.get("userLogin");
+      if(user){
+        const userinfo = JSON.parse(user);
       try {
         // Replace with your backend API endpoint
         const response = await axios.post('http://localhost:5000/settledelivery', {
           orderhash:content.orderhash,
+          delivery:userinfo.username
         });
 
         if (response.data.success) {
@@ -113,6 +117,7 @@ export default function Component() {
 
     }
     };
+  }
   }
 
 

@@ -18,6 +18,7 @@ interface LocationState {
 export default function DeliveryDetails() {
     const location = useLocation()
     const state = location.state as LocationState | null
+    //console.log(state);
     const {id, pickup, des, timeRange, service, orderhash} = state
     const [web3, setWeb3] = useState<Web3 | null>(null);
     const [contract, setContract] = useState<any>(null);
@@ -58,10 +59,10 @@ export default function DeliveryDetails() {
         }
       };
 
-    const confirmFoodPickup = async () => {
+    const confirmFoodPickup = async (orderid) => {
         if (contract && account) {
           try {
-            await contract.methods.confirmFoodPickup(orderId).send({ from: account });
+            await contract.methods.confirmFoodPickup(orderid).send({ from: account });
             alert('Food pickup confirmed!');
           } catch (error) {
             console.error('Error confirming food pickup:', error);
@@ -72,24 +73,25 @@ export default function DeliveryDetails() {
 
     const handleStartDelivery = async() => {
         // Add logic for confirming delivery start
+        console.log("click");
+        console.log(orderhash);
         try {
             // Replace with your backend API endpoint
-            const response = await axios.post('http://localhost:5000/getdelivery', {
+            const response = await axios.post('http://localhost:5000/getdelivery2', {
                 orderhash:orderhash
             });
       
             if (response.data.success) {
             setOrderId(response.data.message.orderid);
-            console.log(orderId);
-            await confirmFoodPickup();
+            console.log(response.data.message.orderid);
+            await confirmFoodPickup(response.data.message.orderid);
       
-              navigate('/Dhome');
+            navigate('/Dhome');
             }
         }catch (error) {
           console.error('Login failed:', error);
         }
         }
-        console.log("Delivery Start");
     
 
     useEffect(() => {
