@@ -24,19 +24,73 @@ export default function RatingPage() {
     const location = useLocation()
     const state = location.state as LocationState | null
     const navigate = useNavigate()
-    const [selectedRating, setSelectedRating] = useState<number>(0);
-    const [submittedRating, setSubmittedRating] = useState<number | null>(null);
+    const [deliverymanHKID, setDeliverymanHKID] = useState<string | null>(null)
+    const [selectedRating, setSelectedRating] = useState(0)
 
     const updateStars = (rating: number) => {
         setSelectedRating(rating);
     };
-    const handleSubmit = () => {
-        if (selectedRating > 0) {
-            setSubmittedRating(selectedRating);
-        } else {
-            alert('Please select a rating before submitting.');
+
+    useEffect(() => {
+        const fetchDeliverymanInfo = async () => {
+            setLoading(true)
+            try {
+                // Get delivery information
+                const deliveryResponse = await axios.post('http://localhost:5000/getdelivery2', { orderhash })
+                if (deliveryResponse.data.success) {
+                    const deliveryman = deliveryResponse.data.message.deliveryman
+
+                    // Get HKID of the deliveryman
+                    const hkidResponse = await axios.post('http://localhost:5000/getHKID2', { name: deliveryman })
+                    if (hkidResponse.data.success) {
+                        setDeliverymanHKID(hkidResponse.data.hkid)
+                    } else {
+                        throw new Error('Failed to get deliveryman HKID')
+                    }
+                } else {
+                    throw new Error('Failed to get delivery information')
+                }
+            } catch (err) {
+                console.error('Error fetching deliveryman info:', err)
+                setError('Failed to fetch deliveryman information')
+            } finally {
+                setLoading(false)
+            }
         }
-    };
+
+        fetchDeliverymanInfo()
+    }, [orderhash])
+
+    const handleSubmit = async () => {
+        if (selectedRating > 0 && deliverymanHKID) {
+            setLoading(true)
+            try {
+                const currentScoreResponse = await axios.post('http://localhost:5000/getScore', {
+                    HKID: deliverymanHKID
+                })
+
+                const currentScore = currentScoreResponse.data.score
+                const newScore = currentScore + (selectedRating * 10)
+                const response = await axios.post('http://localhost:5000/updateScore', {
+                    HKID: deliverymanHKID,
+                    score: newScore
+                })
+
+                if (response.data.success) {
+                    alert('Thank you for your rating!')
+                } else {
+                    throw new Error('Failed to update score')
+                }
+            } catch (error) {
+                console.error('Error updating score:', error)
+                setError('There was an error updating the score. Please try again later.')
+            } finally {
+                setLoading(false)
+            }
+        } else {
+            alert('Please select a rating before submitting.')
+        }
+    }
 
     const handleBackToDashboard = () => {
         navigate('/home')

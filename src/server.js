@@ -310,6 +310,28 @@ app.post('/getHKID', (req, res) => {
     );
 });
 
+app.post('/getHKID2', (req, res) => {
+    const { name } = req.body;
+    pool.execute(
+        'SELECT HKID FROM customer WHERE name=?;',
+        [name],
+        (err, results) => {
+            if (err) {
+                console.error('Database query failed:', err);
+                return res.status(500).json({success: false, message: '服务器错误'});
+            }
+
+            if (results.length > 0) {
+
+                res.json({success: true, message: results[0].HKID});
+            } else {
+                res.json({success: false, message: 'No HKID found.'});
+            }
+        }
+    );
+});
+
+
 app.post('/getScore', (req, res) => {
     const {HKID} = req.body;
     pool.execute(
@@ -469,6 +491,21 @@ app.post('/settledelivery', (req, res) => {
   );
 });
 
+app.post('/updateScore', (req, res) => {
+    const {HKID, score} = req.body;
+    pool.execute(
+        'UPDATE rank SET score = ? WHERE HKID = ?;',
+        [score, HKID],
+        (err, results) => {
+            if (err) {
+                console.error('Database query failed:', err);
+                return res.status(500).json({success: false, message: '服务器错误'});
+            }
+
+            res.json({success: true});
+        }
+    );
+});
 
 // Start the server on port 5000
 const port = 5000;
