@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft } from 'lucide-react'
 import Cookies from "js-cookie";
+import {useNavigate} from "react-router-dom";
 
 interface RankingData {
     hkid: string;
@@ -46,6 +47,7 @@ export default function RankingPage() {
     const [rankingData, setRankingData] = useState<RankingData | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchRankingData = async () => {
