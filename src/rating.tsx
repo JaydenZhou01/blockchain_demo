@@ -24,13 +24,15 @@ interface LocationState {
 
 export default function RatingPage() {
     const location = useLocation()
-    const state = location.state as LocationState | null
+    const state = location.state as LocationState
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const [deliverymanHKID, setDeliverymanHKID] = useState<string | null>(null)
     const [selectedRating, setSelectedRating] = useState(0)
     const [error, setError] = useState<string | null>(null)
+
     const { orders, address1, address2, time, Fee, orderhash } = state
+
     const updateStars = (rating: number) => {
         setSelectedRating(rating);
     };
@@ -43,11 +45,11 @@ export default function RatingPage() {
                 const deliveryResponse = await axios.post('http://localhost:5000/getdelivery2', { orderhash })
                 if (deliveryResponse.data.success) {
                     const deliveryman = deliveryResponse.data.message.deliveryman
-
                     // Get HKID of the deliveryman
                     const hkidResponse = await axios.post('http://localhost:5000/getHKID2', { name: deliveryman })
                     if (hkidResponse.data.success) {
-                        setDeliverymanHKID(hkidResponse.data.hkid)
+                        const hkid = hkidResponse.data.message
+                        setDeliverymanHKID(hkid)
                     } else {
                         throw new Error('Failed to get deliveryman HKID')
                     }
@@ -63,17 +65,19 @@ export default function RatingPage() {
         }
 
         fetchDeliverymanInfo()
+
     }, [orderhash])
 
     const handleSubmit = async () => {
         if (selectedRating > 0 && deliverymanHKID) {
             setLoading(true)
             try {
+                console.log(deliverymanHKID)
                 const currentScoreResponse = await axios.post('http://localhost:5000/getScore', {
                     HKID: deliverymanHKID
                 })
 
-                const currentScore = currentScoreResponse.data.score
+                const currentScore = currentScoreResponse.data.message || 0
                 const newScore = currentScore + (selectedRating * 10)
                 const response = await axios.post('http://localhost:5000/updateScore', {
                     HKID: deliverymanHKID,
@@ -113,6 +117,7 @@ export default function RatingPage() {
             </div>
         )
     }
+
 
     const totalPrice = orders.reduce((sum, item) => sum + item.price * item.count, 0) + parseFloat(Fee)
     return (
