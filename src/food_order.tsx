@@ -44,7 +44,7 @@ export default function FoodOrders() {
         });
     };
     const calculateTotal = (order: Order) => {
-        const itemsTotal = order.order.reduce((sum, item) => sum + item.price * item.count, 0);
+        const itemsTotal = order.order.reduce((sum, item) => sum + item.price, 0);
         return itemsTotal + parseFloat(order.fee);
     };
 
@@ -131,7 +131,7 @@ export default function FoodOrders() {
                                         className="mb-4 p-4 border rounded-lg shadow-md"
                                     >
                                         <h3 className="text-lg font-semibold text-orange-600">
-                                            Order #{order.id}
+                                            Order #{index+1}
                                         </h3>
                                         <div className="mt-2 space-y-1 text-gray-700">
                                             <p>
@@ -141,7 +141,7 @@ export default function FoodOrders() {
                                                 <strong>Delivery Time:</strong> {order.time}
                                             </p>
                                             <p>
-                                                <strong>Total Price:</strong> $
+                                                <strong>Total Price:</strong> DT
                                                 {calculateTotal(order).toFixed(2)}
                                             </p>
                                         </div>

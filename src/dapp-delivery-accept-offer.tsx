@@ -12,6 +12,7 @@ import { ethers } from 'ethers'
 import Cookies from "js-cookie";
 import axios from 'axios';
 
+
 interface Order {
   image: string;
   name: string;
@@ -28,6 +29,7 @@ export default function Component() {
   const [pickup, setP] = useState("");
   const [des, setD] = useState("");
   const navigate = useNavigate()
+
   const handleConnectWallet = async () => {
     if (typeof window.ethereum !== 'undefined') {
       try {
@@ -112,6 +114,7 @@ export default function Component() {
     }
     };
   }
+
 
    useEffect(() => {
     fetchDelivery();

@@ -11,6 +11,9 @@ import Loginpage from "./app_login.tsx";
 import {Link, useNavigate} from 'react-router-dom';
 import Cookies from "js-cookie";
 import axios from 'axios';
+import Web3 from 'web3';
+import { AbiItem } from 'web3-utils';
+import DeliverySystemABI from './DeliverySystemABI.json';
 
 interface Order {
   image: string;
@@ -33,6 +36,18 @@ export default function Component() {
   const [showPicker, setShowPicker] = useState(false);
   const [tempStartTime, setTempStartTime] = useState("");
   const [tempEndTime, setTempEndTime] = useState("");
+  //handle the blockchain effect
+  const [web3, setWeb3] = useState<Web3 | null>(null);
+  const [contract, setContract] = useState<any>(null);
+  const account="0x3dfe367AEafe83d25061EaF082C5CE235837F03a";
+  const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [orderId, setOrderId] = useState<string>('');
+  const restaurantAddress="0xAa29B8Dc495A186A0acD240c415F2979A9E9623c";
+  const deliveryAddress="0x1F1CFfe2F1eCf378FD1c97F1c897f77F7C0F33Da";
+  const [restaurantAmount, setRestaurantAmount] = useState<string>('');
+  const [deliveryAmount, setDeliveryAmount] = useState<string>('');
+  const [oid, setOid] = useState('1');
+
 
   const handleButtonClick = () => {
     setShowPicker(!showPicker);
@@ -64,10 +79,14 @@ export default function Component() {
           result[i].price=result[i].count*result[i].price;
           totalprice+=result[i].price;
         }
+        await setRestaurantAmount(totalprice.toFixed(2));
         totalprice=totalprice+parseFloat(Fee);
         setOrders(result);
-        setLoading(false);
         setTotal(totalprice);
+
+        await setDeliveryAmount(Fee);
+        console.log(restaurantAmount);
+        console.log(deliveryAmount);
       }
   }catch (error) {
     console.error('Login failed:', error);
@@ -76,25 +95,88 @@ export default function Component() {
   };
 }
 
+const initWeb3 = async () => {
+  if (window.ethereum) {
+    const web3Instance = new Web3(window.ethereum);
+    try {
+      await window.ethereum.enable();
+      setWeb3(web3Instance);
+      const accounts = await web3Instance.eth.getAccounts();
+     /*  setAccount("0x3dfe367AEafe83d25061EaF082C5CE235837F03a"); //customer */
+     /*  setAccount("0x1F1CFfe2F1eCf378FD1c97F1c897f77F7C0F33Da"); //delivery */
+     /* setAccount("0xAa29B8Dc495A186A0acD240c415F2979A9E9623c"); */
+      const contractInstance = new web3Instance.eth.Contract(
+        DeliverySystemABI as AbiItem[],
+        "0xaf55cC47Ac30a59976E2368EAB25959F2D69FFC6"
+      );
+      setContract(contractInstance);
+    } catch (error) {
+      console.error("Error initializing web3:", error);
+    }
+  } else {
+    console.log('Please install MetaMask!');
+  }
+};
+
+const createOrder = async () => {
+  if (contract && account) {
+    try {
+      const totalAmount = Web3.utils.toWei((parseFloat(restaurantAmount) + parseFloat(deliveryAmount)).toFixed(2), 'ether');
+      // Send the transaction
+      console.log(totalAmount);
+      const receipt = await contract.methods.createOrder(
+        restaurantAddress,
+        deliveryAddress,
+        Web3.utils.toWei(restaurantAmount, 'ether'),
+        Web3.utils.toWei(deliveryAmount, 'ether')
+      ).send({ from: account, value: totalAmount });
+
+      // Check if the receipt contains events
+      if (receipt.events && receipt.events.OrderCreated) {
+        const orderCount = receipt.events.OrderCreated.returnValues.orderId;
+        console.log(parseInt(orderCount),typeof orderCount);
+        Cookies.set("oid", JSON.stringify({oid:parseInt(orderCount)}), { expires: 7 });
+        //setOid(orderCount);
+ 
+        //alert(`Order created successfully! Order Count: ${orderCount}`);
+      } else {
+        console.log('Full receipt:', receipt);
+        alert('Order created successfully, but order count not found in the event. Check console for full receipt.');
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
+      alert('Failed to create order. Check console for details.');
+    }
+  }
+};
+
 const settleorder= async () =>{
   const userLogin = Cookies.get("userLogin");
+  
     if(userLogin){
       const userInfo = JSON.parse(userLogin);
     try {
       // Replace with your backend API endpoint
+      await createOrder();
+      console.log(oid);
+      const ido=Cookies.get("oid");
+      if(ido){
+      const id_d = JSON.parse(ido);
       const response = await axios.post('http://localhost:5000/setorder', {
         name:userInfo.username,
         order_list:orders,
         des1:address1,
         des2:address2,
         timerange:time,
-        service:Fee
+        service:Fee,
+        orderid:id_d.oid
       });
-
+    
       if (response.data.success) {
         const { orderhash } = response.data; // Extract orderhash from response
-
+  
         console.log("data stored, orderhash:", orderhash);
+
 
         navigate('/order', {
           state: {
@@ -107,9 +189,11 @@ const settleorder= async () =>{
           },
         });
       }
+    }
   }catch (error) {
     console.error('Login failed:', error);
   }
+    
   }
 
 }
@@ -159,8 +243,10 @@ const handleSaveClick3 = () => {
   setTotal(price);
   setIsEditing3(false); // Hide the text area
 };
+
 useEffect(() => {
   fetchOrders();
+  initWeb3();
 }, []);
 
 

@@ -152,7 +152,7 @@ const MainContent: React.FC = () => {
                                 {index > 0 && <Separator className="my-4"/>}
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-start">
-                                        <h3 className="text-lg font-semibold">Order #{order.id}</h3>
+                                        <h3 className="text-lg font-semibold">Order #{index+1}</h3>
                                         <Badge variant="secondary"
                                                className="bg-yellow-400 text-yellow-900 font-bold text-lg">
                                             DT{(order.reward).toFixed(2)}

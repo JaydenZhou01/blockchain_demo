@@ -269,7 +269,7 @@ app.post('/getallorder', (req, res) => {
 
 //set order
 app.post('/setorder', (req, res) => {
-    const { name, order_list, des1, des2, timerange, service } = req.body;
+    const { name, order_list, des1, des2, timerange, service,orderid } = req.body;
     const now = new Date();
 
     // Generate a unique orderhash
@@ -289,8 +289,8 @@ app.post('/setorder', (req, res) => {
 
                 // Insert the delivery record with the same orderhash
                 pool.execute(
-                    'INSERT INTO delivery (name, content, time, orderhash) VALUES (?, ?, ?, ?);',
-                    [name, now_order, now, orderhash],
+                    'INSERT INTO delivery (name, content, time, orderhash,orderid) VALUES (?, ?, ?, ?,?);',
+                    [name, now_order, now, orderhash,parseInt(orderid)],
                     (err, results) => {
                         if (err) {
                             console.error('Database query failed:', err);
